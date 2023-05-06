@@ -16,7 +16,9 @@ struct select_row {
   char **azColName;
 };
 
-static int select_common_callback(void *data, int argc, char **argv,
+static int select_common_callback(void *data,
+                                  int argc,
+                                  char **argv,
                                   char **azColName) {
   // struct select_row *rows = (struct select_row *)data;
   // struct select_row row;
@@ -38,9 +40,9 @@ extern int exec_sql(const char *sql_str,
                                     char **azColName),
                     void *data);
 extern int create_table(const char *sql_str);
-extern int insert(const char *sql_str);
-extern int delete (const char *sql_str);
-extern int select(const char *sql_str, struct select_row **rows);
+extern int add(const char *sql_str);
+extern int del(const char *sql_str);
+extern int query(const char *sql_str, struct select_row **rows);
 extern int update(const char *sql_str);
 
 extern int close_db();

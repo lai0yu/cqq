@@ -26,16 +26,16 @@ int create_table(const char *sql_str) {
   return exec_sql(sql_str, NULL, NULL);
 }
 
-int insert(const char *sql_str) {
+int add(const char *sql_str) {
   return exec_sql(sql_str, NULL, NULL);
 }
 
-int delete(const char *sql_str) {
+int del(const char *sql_str) {
   return exec_sql(sql_str, NULL, NULL);
 }
 
 // remeber free
-int select(const char *sql_str, struct select_row **rows) {
+int query(const char *sql_str, struct select_row **rows) {
   int select_ret = exec_sql(sql_str, select_common_callback, rows);
   row_tick = 0;
   return select_ret;
