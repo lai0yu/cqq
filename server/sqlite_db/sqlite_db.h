@@ -6,9 +6,11 @@
 #include <string.h>
 #include <sqlite3.h>
 
-extern sqlite3 *create_db(void);                 // 创建数据库
-extern void open(struct user_data *, sqlite3 *); // 注册账号,传账号和句柄
-extern void exec(struct user_data *, sqlite3 *); // 登录账号,传账号和句柄
-extern void close(sqlite3 *);                    // 关闭数据库
+extern sqlite3 *open_db(void); //打开数据库,返回句柄
+extern void close(sqlite3 *); //关闭数据库,传进句柄
+extern void exec_add(char *,sqlite3 *); //添加数据
+extern void exec_del(char *,sqlite3 *); //删除数据
+extern void exec_update(char *,sqlite3 *); //修改数据
+extern void exec_select(char *,sqlite3 *,void *); //查询数据
 
 #endif
