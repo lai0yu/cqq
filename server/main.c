@@ -76,7 +76,8 @@ int main(int argc, char *argv[]) {
 
       if (FD_ISSET(serv_sock, &fdset)) {
         nclient_addr = (struct sockaddr_in *)malloc(sizeof(struct sockaddr_in));
-        nclient_sock = accept(serv_sock, (struct sockaddr *)nclient_addr, &nc_size);
+        nclient_sock =
+            accept(serv_sock, (struct sockaddr *)nclient_addr, &nc_size);
         if (nclient_sock > 0) {
 
           if (ccount <= MAX_CONNECT) {
@@ -91,7 +92,8 @@ int main(int argc, char *argv[]) {
                    ntohs(nclient_addr->sin_port));
 
           } else {
-            printf("A new client %s:%d connect has been refuse because max connect!\n",
+            printf("A new client %s:%d connect has been refuse because max "
+                   "connect!\n",
                    inet_ntoa(nclient_addr->sin_addr),
                    ntohs(nclient_addr->sin_port));
 
