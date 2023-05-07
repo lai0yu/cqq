@@ -2,7 +2,7 @@
 
 int open()
 {
-	int ret = sqlite3_open(db_file, &ppdb);
+	int ret = sqlite3_open(db_filename, &ppdb);
 	if(ret != SQLITE_OK)
 	{
 		perror("Open database Failed!\n");
@@ -46,7 +46,7 @@ int del(const char* sql_str)
 	return exec_sql(sql_str, NULL, NULL);
 }
 
-int query(const char* sql_str, struct dbrow* rows)
+int query(const char* sql_str, struct db_row* rows)
 {
 	row_tick = 0;
 	int query_ret = exec_sql(sql_str, select_common_callback, rows);

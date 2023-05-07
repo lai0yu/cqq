@@ -9,11 +9,12 @@
 #define OK 0
 #define ERROR -1
 
-static int row_tick = 0;
+static const char* db_filename;
 static sqlite3* ppdb;
+static int row_tick = 0;
 static char* zErrMsg = NULL;
 
-struct dbrow
+struct db_row
 {
 	int argc;
 	char** argv;
@@ -23,9 +24,9 @@ struct dbrow
 
 static int select_common_callback(void* data, int argc, char** argv, char** azColName)
 {
-	struct dbrow* rows = (struct dbrow*)data;
+	struct db_row* rows = (struct db_row*)data;
 
-	struct dbrow* row = (struct dbrow*)malloc(sizeof(struct dbrow));
+	struct db_row* row = (struct db_row*)malloc(sizeof(struct db_row));
 	row->argc = argc;
 	row->argv = argv;
 	row->azColName = azColName;
@@ -45,7 +46,7 @@ extern int exec_sql(
 extern int create_table(const char* sql_str);
 extern int add(const char* sql_str);
 extern int del(const char* sql_str);
-extern int query(const char* sql_str, struct dbrow* rows);
+extern int query(const char* sql_str, struct db_row* rows);
 extern int update(const char* sql_str);
 extern int close_db();
 #endif

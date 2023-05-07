@@ -12,7 +12,7 @@
 #include <time.h>
 #include <unistd.h>
 
-#include "../json_data/json_data.h"
+#include "../../lib/json_util/json_util.h"
 
 // 最大连接数
 #define MAX_CONNECT 1000
@@ -124,8 +124,8 @@ int main(int argc, char* argv[])
 					}
 				}
 			}
-
-			for(int i = 0; i < ccount; i++)
+			int i;
+			for(i = 0; i < ccount; i++)
 			{
 				if(FD_ISSET(client_socks[i], &fdset))
 				{
@@ -134,7 +134,7 @@ int main(int argc, char* argv[])
 					if(recv_ret > 0)
 					{
 
-						struct msg_data cmsg = parse_json(recv_buf);
+						struct msg cmsg = parse_msg(recv_buf);
 
 						if(strcmp(recv_buf, "sign_in") == 0)
 						{

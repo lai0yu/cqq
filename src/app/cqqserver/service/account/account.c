@@ -1,5 +1,4 @@
 #include "account.h"
-#include "../../sqlite_db/sqlite_db.h"
 
 int create_tables()
 {
@@ -16,13 +15,13 @@ int sign_in(const char* username, const char* password)
 	char full_sql[128];
 	sprintf(full_sql, sql_select_by_username, username);
 
-	struct dbrow head;
+	struct db_row head;
 	INIT_LIST_HEAD(&head.list);
 
 	int select_ret = query(full_sql, &head);
 
 	int return_ret = -1;
-	struct dbrow* pos;
+	struct db_row* pos;
 
 	if(select_ret == SQLITE_OK)
 	{
