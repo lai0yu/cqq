@@ -1,8 +1,8 @@
-#include "sqlite_db.h"
+#include "sqlite_util.h"
 
 int open()
 {
-	int ret = sqlite3_open(db_filename, &ppdb);
+	int ret = sqlite3_open(db_file, &ppdb);
 	if(ret != SQLITE_OK)
 	{
 		perror("Open database Failed!\n");
