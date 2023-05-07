@@ -1,3 +1,5 @@
+//内核链表
+
 #ifndef _LINUX_LIST_H
 #define _LINUX_LIST_H
 

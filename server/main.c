@@ -12,6 +12,8 @@
 #include <time.h>
 #include <unistd.h>
 
+#include "../json_data/json_data.h"
+
 // 最大连接数
 #define MAX_CONNECT 1000
 
@@ -43,7 +45,7 @@ int main(int argc, char* argv[])
 	listen(serv_sock, MAX_CONNECT);
 
 	// 客户端套接字列表，如果客户端连上了就放在这个列表中
-	// TODO：可能要放在数据库上面。
+	// TODO：套接字列表和客户端的对应关系可能要放在数据库上面。
 	int client_socks[MAX_CONNECT] = {-1};
 	struct sockaddr_in* client_addrs[MAX_CONNECT] = {NULL};
 	int ccount = 0;
@@ -61,8 +63,10 @@ int main(int argc, char* argv[])
 	char recv_buf[1284];
 	while(1)
 	{
+
 		FD_ZERO(&fdset);
 		FD_SET(serv_sock, &fdset);
+
 		for(i = 0; i < ccount; i++)
 		{
 			if(client_socks[i] > 0)
@@ -96,16 +100,18 @@ int main(int argc, char* argv[])
 						// TODO:Send Client Connect OK;
 						// TODO:Update online table
 
-						printf("A new client %s:%d has connected!\n",
-							   inet_ntoa(nclient_addr->sin_addr),
-							   ntohs(nclient_addr->sin_port));
+						printf(
+							"A new client %s:%d has connected!\n",
+							inet_ntoa(nclient_addr->sin_addr),
+							ntohs(nclient_addr->sin_port));
 					}
 					else
 					{
-						printf("A new client %s:%d connect has been refuse because max "
-							   "connect!\n",
-							   inet_ntoa(nclient_addr->sin_addr),
-							   ntohs(nclient_addr->sin_port));
+						printf(
+							"A new client %s:%d connect has been refuse because max "
+							"connect!\n",
+							inet_ntoa(nclient_addr->sin_addr),
+							ntohs(nclient_addr->sin_port));
 
 						// TODO：Send Client message Has Been refuse cause of max connect!
 
@@ -127,14 +133,22 @@ int main(int argc, char* argv[])
 					int recv_ret = recv(client_socks[i], recv_buf, sizeof(recv_buf), 0);
 					if(recv_ret > 0)
 					{
-						// TODO:unpack_json
 
-						// TODO:service
+						struct msg_data cmsg = parse_json(recv_buf);
 
-						printf("Message from client %s:%d==>%s\n",
-							   inet_ntoa(client_addrs[i]->sin_addr),
-							   ntohs(client_addrs[i]->sin_port),
-							   recv_buf);
+						if(strcmp(recv_buf, "sign_in") == 0)
+						{
+						}
+						else if(strcmp(recv_buf, "sign_up") == 0)
+						{}
+						else if(strcmp(recv_buf, "sign_out") == 0)
+						{}
+
+						printf(
+							"Message from client %s:%d==>%s\n",
+							inet_ntoa(client_addrs[i]->sin_addr),
+							ntohs(client_addrs[i]->sin_port),
+							recv_buf);
 					}
 				}
 			}

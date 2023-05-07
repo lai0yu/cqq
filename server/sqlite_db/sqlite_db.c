@@ -46,13 +46,11 @@ int del(const char* sql_str)
 	return exec_sql(sql_str, NULL, NULL);
 }
 
-// remeber free
-int query(const char* sql_str, struct data_row* list)
+int query(const char* sql_str, struct dbrow* rows)
 {
 	row_tick = 0;
-	int select_ret = exec_sql(sql_str, select_common_callback, list);
-
-	return select_ret;
+	int query_ret = exec_sql(sql_str, select_common_callback, rows);
+	return query_ret;
 }
 
 int close()

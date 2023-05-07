@@ -11,24 +11,24 @@
 
 static int row_tick = 0;
 
-struct data_row
+struct dbrow
 {
 	int argc;
 	char** argv;
 	char** azColName;
-	struct list_head list_node;
+	struct list_head list;
 };
 
-int select_common_callback(void* data, int argc, char** argv, char** azColName)
+static int select_common_callback(void* data, int argc, char** argv, char** azColName)
 {
-	struct list_head* data_list = (struct list_head*)data;
+	struct dbrow* rows = (struct dbrow*)data;
 
-	struct data_row* row = (struct data_row*)malloc(sizeof(struct data_row));
+	struct dbrow* row = (struct dbrow*)malloc(sizeof(struct dbrow));
 	row->argc = argc;
 	row->argv = argv;
 	row->azColName = azColName;
 
-	list_add(&row->list_node, data_list);
+	list_add(&row->list, &rows->list);
 
 	row_tick++;
 
@@ -48,7 +48,7 @@ extern int exec_sql(
 extern int create_table(const char* sql_str);
 extern int add(const char* sql_str);
 extern int del(const char* sql_str);
-extern int query(const char* sql_str, struct data_row* data_list);
+extern int query(const char* sql_str, struct dbrow* rows);
 extern int update(const char* sql_str);
 
 extern int close_db();
