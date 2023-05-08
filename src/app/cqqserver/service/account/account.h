@@ -18,7 +18,8 @@ static const char* sql_create_account_table = "create table if not exists tb_acc
   update_at datetime default (datetime('now', 'localtime'))\
 )";
 
-static const char* sql_insert_account = "insert into tb_account values('%s','%s')";
+static const char* sql_insert_account =
+	"insert into tb_account(username,password) values('%s','%s')";
 static const char* sql_select_by_username = "select * from tb_account where username=='%s'";
 static const char* sql_update_username_by_id = "update tb_account set username='%s' where id=%d";
 static const char* sql_update_password_by_id = "update tb_account set password='%s' where id=%d";
