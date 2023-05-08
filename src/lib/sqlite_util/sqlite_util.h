@@ -9,7 +9,7 @@
 #define OK 0
 #define ERROR -1
 
-static const char* db_filename;
+static const char* db_filename = "test.db";
 static sqlite3* ppdb;
 static int row_tick = 0;
 static char* zErrMsg = NULL;

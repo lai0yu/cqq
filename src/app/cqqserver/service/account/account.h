@@ -8,8 +8,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-static char *select_username, *select_password;
-
 static const char* sql_create_account_table = "create table if not exists account(\
   id integer PRIMARY KEY autoincrement,\
   username char[64],\
