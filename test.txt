@@ -1,0 +1,7 @@
+{"code":0,"cmd":"sign_up","data":"{"username":"lai0yu","password":"123456"}"}
+
+{"code":0,"cmd":"sign_up","data":{"username":"lai0yu","password":"123456"}}
+
+
+
+{"code":0,"cmd":"sign_up","data":""}

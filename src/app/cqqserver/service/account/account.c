@@ -2,6 +2,7 @@
 
 int create_tables()
 {
+	open_db();
 	return exec_sql(sql_create_account_table, NULL, NULL);
 }
 
@@ -21,7 +22,7 @@ int sign_in(const char* data, int socket)
 	struct db_row head;
 	INIT_LIST_HEAD(&head.list);
 
-	int select_ret = query(fsql, &head);
+	int select_ret = exec_sql(fsql, select_common_callback, (void*)&head);
 
 	int return_ret = -1;
 	struct db_row* pos;
@@ -70,9 +71,10 @@ int sign_in(const char* data, int socket)
 int sign_up(const char* data)
 {
 	struct si_data sid = parse_sign_in_data(data);
-	char full_sql[512];
-	sprintf(full_sql, sql_insert_account, sid.username, sid.password);
-	return add(full_sql);
+	char fsql[512];
+	bzero(fsql, sizeof(fsql));
+	sprintf(fsql, sql_insert_account, sid.username, sid.password);
+	return exec_sql(fsql, NULL, NULL);
 }
 
 int sign_out(const char* data)

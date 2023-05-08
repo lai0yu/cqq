@@ -1,7 +1,7 @@
 //内核链表
 
-#ifndef _LINUX_LIST_H
-#define _LINUX_LIST_H
+#ifndef __LINUX_LIST_H__
+#define __LINUX_LIST_H__
 
 /*
  * Simple doubly linked list implementation.

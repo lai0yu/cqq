@@ -1,6 +1,6 @@
 #include "sqlite_util.h"
 
-int open()
+int open_db()
 {
 	int ret = sqlite3_open(db_filename, &ppdb);
 	if(ret != SQLITE_OK)
@@ -31,29 +31,34 @@ int exec_sql(
 	}
 	return OK;
 }
-int create_table(const char* sql_str)
+int sql_create_table(const char* sql_str)
 {
 	return exec_sql(sql_str, NULL, NULL);
 }
 
-int add(const char* sql_str)
+int sql_add(const char* sql_str)
 {
 	return exec_sql(sql_str, NULL, NULL);
 }
 
-int del(const char* sql_str)
+int sql_del(const char* sql_str)
 {
 	return exec_sql(sql_str, NULL, NULL);
 }
 
-int query(const char* sql_str, struct db_row* rows)
+int sql_query(const char* sql_str, struct db_row* rows)
 {
 	row_tick = 0;
 	int query_ret = exec_sql(sql_str, select_common_callback, rows);
 	return query_ret;
 }
 
-int close()
+int sql_update(const char* sql_str)
+{
+	return exec_sql(sql_str, NULL, NULL);
+}
+
+int close_db()
 {
 	sqlite3_close(ppdb);
 

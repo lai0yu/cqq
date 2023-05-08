@@ -38,15 +38,10 @@ static int select_common_callback(void* data, int argc, char** argv, char** azCo
 	return 0;
 }
 
-extern int open_db(const char* db_filename);
+extern int open_db();
 extern int exec_sql(
 	const char* sql_str,
 	int (*callback)(void* data, int argc, char** argv, char** azColName),
 	void* data);
-extern int create_table(const char* sql_str);
-extern int add(const char* sql_str);
-extern int del(const char* sql_str);
-extern int query(const char* sql_str, struct db_row* rows);
-extern int update(const char* sql_str);
 extern int close_db();
 #endif

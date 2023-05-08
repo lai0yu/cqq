@@ -84,4 +84,11 @@ void main_ui(void)
 
 ##### 1. user表
 
+
+#### 消息
+
+```
+{"code":0,"msg":"sign_up","data:{ "username":lai0yu,"password":"123456"}"}
+```
+
 ##### 2

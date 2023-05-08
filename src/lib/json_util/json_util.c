@@ -3,17 +3,17 @@
 struct msg parse_msg(char* json_str)
 {
 	struct msg pack;
+	memset(&pack, 0, sizeof(pack));
 
 	struct json_object* object = json_tokener_parse(json_str);
 
-	struct json_object* obj_code_str = json_object_object_get(object, "code");
-	struct json_object* obj_msg_str = json_object_object_get(object, "cmd");
+	struct json_object* obj_code_int = json_object_object_get(object, "code");
+	struct json_object* obj_cmd_str = json_object_object_get(object, "cmd");
 	struct json_object* obj_data_str = json_object_object_get(object, "data");
 
-	pack.code = json_object_get_int(obj_code_str);
-	strcpy(pack.cmd, json_object_get_string(obj_msg_str));
+	pack.code = json_object_get_int(obj_code_int);
+	strcpy(pack.cmd, json_object_get_string(obj_cmd_str));
 	strcpy(pack.data, json_object_get_string(obj_data_str));
-
 	return pack;
 }
 

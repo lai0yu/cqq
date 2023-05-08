@@ -2,6 +2,7 @@
 #define __JSON_UTIL_H__
 
 #include <json/json.h>
+#include <stdio.h>
 #include <string.h>
 
 struct msg

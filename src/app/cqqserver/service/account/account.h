@@ -11,14 +11,14 @@
 
 static const char* sql_create_account_table = "create table if not exists tb_account(\
   id integer PRIMARY KEY autoincrement,\
-  username char[64],\
+  username char[64] UNIQUE,\
   password char[64],\
   socket integer default -1,\
   create_at datetime default (datetime('now', 'localtime')),\
   update_at datetime default (datetime('now', 'localtime'))\
-),unique(id,username)";
+)";
 
-static const char* sql_insert_account = "insert to tb_account values('%s','%s')";
+static const char* sql_insert_account = "insert into tb_account values('%s','%s')";
 static const char* sql_select_by_username = "select * from tb_account where username=='%s'";
 static const char* sql_update_username_by_id = "update tb_account set username='%s' where id=%d";
 static const char* sql_update_password_by_id = "update tb_account set password='%s' where id=%d";
@@ -35,6 +35,8 @@ struct si_data
 static inline struct si_data parse_sign_in_data(const char* json_str)
 {
 	struct si_data pack;
+
+	memset(&pack, 0, sizeof(pack));
 
 	struct json_object* object = json_tokener_parse(json_str);
 

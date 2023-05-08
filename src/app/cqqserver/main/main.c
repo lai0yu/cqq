@@ -125,20 +125,19 @@ int main(int argc, char* argv[])
 				{
 					bzero(recv_buf, sizeof(recv_buf));
 					int recv_ret = recv(client_socks[i], recv_buf, sizeof(recv_buf), 0);
+
 					if(recv_ret > 0)
 					{
-
 						struct msg cmsg = parse_msg(recv_buf);
-
-						if(strcmp(recv_buf, "sign_in") == 0)
+						if(strcmp(cmsg.cmd, "sign_in") == 0)
 						{
 							int ret = sign_in(cmsg.data, client_socks[i]);
 						}
-						else if(strcmp(recv_buf, "sign_up") == 0)
+						else if(strcmp(cmsg.cmd, "sign_up") == 0)
 						{
 							int ret = sign_up(cmsg.data);
 						}
-						else if(strcmp(recv_buf, "sign_out") == 0)
+						else if(strcmp(cmsg.cmd, "sign_out") == 0)
 						{
 							int ret = sign_up(cmsg.data);
 						}
