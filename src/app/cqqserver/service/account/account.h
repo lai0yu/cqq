@@ -19,6 +19,7 @@ static const char* sql_insert_account = "insert to account values('%s','%s')";
 static const char* sql_select_by_username = "select * from account where username=='%s'";
 static const char* sql_update_username_by_id = "update account set username='%s' where id=%d";
 static const char* sql_update_password_by_id = "update account set password='%s' where id=%d";
+static const char* sql_delete_by_id = "delete from account where id=%d";
 
 extern int init_service();
 extern int sign_in(const char* username, const char* password);
