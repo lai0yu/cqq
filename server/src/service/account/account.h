@@ -1,9 +1,8 @@
 #ifndef __ACCOUNT_H__
 #define __ACCOUNT_H__
 
-#include "../../../../lib/json_util/json_util.h"
-#include "../../../../lib/linux_list/linux_list.h"
-#include "../../../../lib/sqlite_util/sqlite_util.h"
+#include "../../lib/json_util/json_util.h"
+#include "../../lib/sqlite_util/sqlite_util.h"
 #include <sqlite3.h>
 #include <stdio.h>
 #include <stdlib.h>
