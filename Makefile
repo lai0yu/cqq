@@ -8,8 +8,8 @@ INCDIRS 			:= 	src/lib/json_util \
 					
 VPATH           	:=$(INCDIRS)
 		   
-INCLUDE			:= $(patsubst %, -c %, $(INCDIRS))
-CFILES			:= $(foreach dir, $(INCDIRS), $(wildcard $(dir)/*.c))
+INCLUDE				:= $(patsubst %, -c %, $(INCDIRS))
+CFILES				:= $(foreach dir, $(INCDIRS), $(wildcard $(dir)/*.c))
 CFILENDIR			:= $(notdir  $(CFILES))
 COBJS				:= $(patsubst %, obj/%, $(CFILENDIR:.c=.o))
 OBJS				:= $(COBJS)
