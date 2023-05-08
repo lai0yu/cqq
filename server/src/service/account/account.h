@@ -51,6 +51,7 @@ static inline struct si_data parse_sign_in_data(const char* json_str)
 
 extern int init_service();
 extern int sign_in(const char* data, int socket);
-extern int sign_up(const char* data);
-extern int sign_out(const char* data);
+extern int sign_up(const char* data, int socket);
+extern int sign_out(const char* data, int socket);
+
 #endif

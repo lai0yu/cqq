@@ -135,11 +135,11 @@ int main(int argc, char* argv[])
 						}
 						else if(strcmp(cmsg.cmd, "sign_up") == 0)
 						{
-							int ret = sign_up(cmsg.data);
+							int ret = sign_up(cmsg.data, client_socks[i]);
 						}
 						else if(strcmp(cmsg.cmd, "sign_out") == 0)
 						{
-							int ret = sign_up(cmsg.data);
+							int ret = sign_out(cmsg.data, client_socks[i]);
 						}
 
 						printf(

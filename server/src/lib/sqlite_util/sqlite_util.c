@@ -31,32 +31,6 @@ int exec_sql(
 	}
 	return OK;
 }
-int sql_create_table(const char* sql_str)
-{
-	return exec_sql(sql_str, NULL, NULL);
-}
-
-int sql_add(const char* sql_str)
-{
-	return exec_sql(sql_str, NULL, NULL);
-}
-
-int sql_del(const char* sql_str)
-{
-	return exec_sql(sql_str, NULL, NULL);
-}
-
-int sql_query(const char* sql_str, struct db_row* rows)
-{
-	row_tick = 0;
-	int query_ret = exec_sql(sql_str, select_common_callback, rows);
-	return query_ret;
-}
-
-int sql_update(const char* sql_str)
-{
-	return exec_sql(sql_str, NULL, NULL);
-}
 
 int close_db()
 {
