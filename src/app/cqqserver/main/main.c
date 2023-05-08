@@ -3,8 +3,6 @@
 #include <netinet/in.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
-#include <strings.h>
 #include <sys/select.h>
 #include <sys/socket.h>
 #include <sys/stat.h>
@@ -12,7 +10,7 @@
 #include <time.h>
 #include <unistd.h>
 
-#include "../../../lib/json_util/json_util.h"
+#include "../service/account/account.h"
 
 // 最大连接数
 #define MAX_CONNECT 1000
@@ -31,21 +29,18 @@ int main(int argc, char* argv[])
 		strcpy(serv_port, argv[2]);
 	}
 
-	// 初始化服务器套接字
 	int serv_sock = socket(AF_INET, SOCK_STREAM, 0);
 
-	// 服务器套接字绑定地址信息
 	struct sockaddr_in serv_addr;
 	serv_addr.sin_family = AF_INET;
 	serv_addr.sin_addr.s_addr = inet_addr(serv_ip);
 	serv_addr.sin_port = htons(atoi(serv_port));
 	bind(serv_sock, (struct sockaddr*)&serv_addr, sizeof(serv_addr));
 
-	// 监听服务器套接字
 	listen(serv_sock, MAX_CONNECT);
 
-	// 客户端套接字列表，如果客户端连上了就放在这个列表中
-	// TODO：套接字列表和客户端的对应关系可能要放在数据库上面。
+	init_service();
+
 	int client_socks[MAX_CONNECT] = {-1};
 	struct sockaddr_in* client_addrs[MAX_CONNECT] = {NULL};
 	int ccount = 0;
@@ -55,9 +50,8 @@ int main(int argc, char* argv[])
 	tv.tv_sec = 0;
 	tv.tv_usec = 0;
 
-	// 临时变量得定义放在循环外面，节省栈空间地操作
-	// nclient_sock, nc_size
-	int i, j, select_ret, recv_ret, nclient_sock = -1, nc_size;
+	int i, j, select_ret, recv_ret, nclient_sock = -1;
+	unsigned int nc_size;
 	struct sockaddr_in* nclient_addr = NULL;
 
 	char recv_buf[1284];
@@ -138,11 +132,16 @@ int main(int argc, char* argv[])
 
 						if(strcmp(recv_buf, "sign_in") == 0)
 						{
+							int ret = sign_in(cmsg.data, client_socks[i]);
 						}
 						else if(strcmp(recv_buf, "sign_up") == 0)
-						{}
+						{
+							int ret = sign_up(cmsg.data);
+						}
 						else if(strcmp(recv_buf, "sign_out") == 0)
-						{}
+						{
+							int ret = sign_up(cmsg.data);
+						}
 
 						printf(
 							"Message from client %s:%d==>%s\n",

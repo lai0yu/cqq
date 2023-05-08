@@ -1,11 +1,6 @@
 #include <arpa/inet.h>
 #include <netinet/in.h>
 #include <pthread.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <strings.h>
-#include <sys/socket.h>
 #include <sys/types.h>
 #include <unistd.h>
 void* recv_work(void* arg)

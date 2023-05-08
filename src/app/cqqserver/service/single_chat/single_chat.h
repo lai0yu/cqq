@@ -41,4 +41,4 @@ static const char* sql_add_fmsg = "insert to tb_fmsg values(%d,%d,%s)";
 static const char* sql_query_noorecv_fmsg_by_to =
 	"select * from tb_fmsg where recv_id==%d and recv_at==null";
 
-static cosnt char* sql_update_fmsg_recvtime_by_id = "update tb_fmsg set r"
+//static cosnt char* sql_update_fmsg_recvtime_by_id = "update tb_fmsg set r"
