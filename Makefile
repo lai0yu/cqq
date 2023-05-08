@@ -1,6 +1,5 @@
 CC 				    := gcc
-TARGET		  	?= bin/cqqserver
-TARGET_C      		?= bin/cqqclient
+TARGET		  		?= bin/cqqserver
 
 INCDIRS 			:= 	src/lib/json_util \
 						src/lib/sqlite_util \
