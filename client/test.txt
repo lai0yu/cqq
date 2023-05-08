@@ -1,5 +1,0 @@
-客户端测试数据
-
-注册：{"code":0,"cmd":"sign_up","data":{"username":"lai0yu","password":"123456"}}
-
-登录：{"code":0,"cmd":"sign_in","data":{"username":"lai0yu","password":"123456"}}

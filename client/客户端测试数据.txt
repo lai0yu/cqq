@@ -1,0 +1,16 @@
+客户端测试数据
+
+注册：{"code":0,"cmd":"sign_up","data":{"username":"lai0yu","password":"123456"}}
+注册：{"code":0,"cmd":"sign_up","data":{"username":"赖林宇","password":"111111"}}
+注册：{"code":0,"cmd":"sign_up","data":{"username":"罗炽龙","password":"222222"}}
+注册：{"code":0,"cmd":"sign_up","data":{"username":"梁锦涛","password":"333333"}}
+注册：{"code":0,"cmd":"sign_up","data":{"username":"粟磊","password":"444444"}}
+注册：{"code":0,"cmd":"sign_up","data":{"username":"蔡徐坤","password":"000000"}}
+
+登录：{"code":0,"cmd":"sign_in","data":{"username":"lai0yu","password":"123456"}}
+登录：{"code":0,"cmd":"sign_in","data":{"username":"赖林宇","password":"111111"}}
+登录：{"code":0,"cmd":"sign_in","data":{"username":"罗炽龙","password":"222222"}}
+登录：{"code":0,"cmd":"sign_in","data":{"username":"梁锦涛","password":"333333"}}
+登录：{"code":0,"cmd":"sign_in","data":{"username":"粟磊","password":"444444"}}
+登录：{"code":0,"cmd":"sign_in","data":{"username":"蔡徐坤","password":"000000"}}
+
