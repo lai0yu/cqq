@@ -4,6 +4,7 @@ TARGET		  		?= cqqserver
 INCDIRS 			:= 	src/lib/json_util \
 						src/lib/sqlite_util \
 						src/service/account \
+						src/service/single_chat \
 						src/main
 					
 VPATH           	:=$(INCDIRS)

@@ -11,6 +11,7 @@
 #include <unistd.h>
 
 #include "../service/account/account.h"
+#include "../service/single_chat/single_chat.h"
 
 // 最大连接数
 #define MAX_CONNECT 1000
@@ -39,7 +40,9 @@ int main(int argc, char* argv[])
 
 	listen(serv_sock, MAX_CONNECT);
 
-	init_service();
+	open_db();
+	init_account_service();
+	init_singlechat_service();
 
 	int client_socks[MAX_CONNECT] = {-1};
 	struct sockaddr_in* client_addrs[MAX_CONNECT] = {NULL};

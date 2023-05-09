@@ -1,14 +1,8 @@
 #include "account.h"
 
-int create_tables()
+int init_account_service()
 {
-	open_db();
 	return exec_sql(sql_create_account_table, NULL, NULL);
-}
-
-int init_service()
-{
-	return create_tables();
 }
 
 int sign_in(const char* data, int socket)

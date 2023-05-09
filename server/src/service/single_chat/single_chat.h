@@ -1,23 +1,27 @@
+#include "../../lib/json_util/json_util.h"
+#include "../../lib/sqlite_util/sqlite_util.h"
 #include <sqlite3.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
-
+#include <sys/socket.h>
 //friend
 static const char* sql_create_friend_table = "create table if not exists tb_friend(\
   id integer PRIMARY KEY autoincrement,\
   account_id integer,\
   friend_id integer,\
   create_at datetime default (datetime('now', 'localtime')),\
-  update_at datetime default (datetime('now', 'localtime')),\
-  FOREIGN KEY(account_id) REFERENCES tb_account(id),\
-  FOREIGN KEY(friend_id) REFERENCES tb_account(id)\
-),unique(id)";
+  update_at datetime default (datetime('now', 'localtime'))\
+)";
 
 static const char* sql_insert_friend = "insert into tb_friend(account_id,friend_id) values(%d,%d)";
 static const char* sql_select_friends_by_accid =
 	"select from tb_friend where account_id==%d or friend_id == %d";
 static const char* sql_delete_friend_by_id = "delete from tb_friend where id==%d";
+
+static const char* sql_select_account_by_id = "select * from tb_account where id==%d";
+
+static const char* sql_select_account_id_by_username =
+	"select * from tb_account where username=='%s'";
 
 //friend msg
 static const char* sql_create_fmsg_table = "create table if not exists tb_fmsg(\
@@ -26,9 +30,7 @@ static const char* sql_create_fmsg_table = "create table if not exists tb_fmsg(\
   recv_id integer,\
   msg char[1024],\
   send_at datetime default (datetime('now','localtime')),\
-  recv_at datetime default null,\
-  FOREIGN KEY(send_id) REFERENCES tb_account(id),\
-  FOREIGN KEY(recv_id) REFERENCES tb_account(id)\
+  recv_at datetime default null\
 )";
 
 static const char* sql_add_fmsg = "insert to tb_fmsg values(%d,%d,'%s')";
@@ -37,3 +39,7 @@ static const char* sql_query_noorecv_fmsg_by_to =
 
 static const char* sql_update_fmsg_recv_nowtime_by_id =
 	"update tb_fmsg set recv_time=(datetime('now','localtime')) where id=='%d'";
+
+extern int init_singlechat_service();
+
+extern int get_friend_list(const char* username);

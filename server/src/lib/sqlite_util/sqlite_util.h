@@ -49,6 +49,26 @@ static int select_common_callback(void* data, int argc, char** argv, char** azCo
 	return 0;
 }
 
+static int select_single_callback(void* data, int argc, char** argv, char** azColName)
+{
+	struct db_row* rows = (struct db_row*)data;
+	struct db_row* row = (struct db_row*)malloc(sizeof(struct db_row));
+	row->argc = argc;
+	row->argv = (char**)malloc(sizeof(char*) * argc);
+	row->azColName = (char**)malloc(sizeof(char*) * argc);
+	int i;
+	for(i = 0; i < argc; ++i)
+	{
+		row->argv[i] = (char*)malloc(strlen(argv[i]) + 1);
+		row->azColName[i] = (char*)malloc(strlen(azColName[i]) + 1);
+		strcpy(row->argv[i], argv[i]);
+		strcpy(row->azColName[i], azColName[i]);
+		printf("%s:%s\t", azColName[i], argv[i]);
+	}
+
+	return 0;
+}
+
 extern int open_db();
 extern int exec_sql(
 	const char* sql_str,
