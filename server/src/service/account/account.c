@@ -35,36 +35,79 @@ int sign_in(const char* data, int socket)
 		{
 			if(row_tick == 1)
 			{
-				int password_cmp = strcmp(sid.password, pos[0].argv[2]);
-				if(password_cmp == 0)
+				list_for_each_entry(pos, &head.list, list)
 				{
-					char fsql[512];
-					bzero(fsql, sizeof(fsql));
-					sprintf(fsql, sql_update_socket_by_username, socket, sid.username);
+					int password_cmp = strcmp(sid.password, pos->argv[2]);
+					printf("%s\n", pos->argv[2]);
+					printf("%s\n", sid.password);
+					if(password_cmp == 0)
+					{
+						char fsql[512];
+						bzero(fsql, sizeof(fsql));
+						sprintf(fsql, sql_update_socket_by_username, socket, sid.username);
 
-					exec_sql(fsql, NULL, NULL);
+						exec_sql(fsql, NULL, NULL);
 
-					fmsg.code = 0;
-					strcpy(fmsg.cmd, "fmsg");
-					sprintf(fmsg.data, "用户名:%s 成功登陆", sid.username);
+						fmsg.code = 0;
+						strcpy(fmsg.cmd, "fmsg");
+						sprintf(fmsg.data, "用户:%s 成功登陆", sid.username);
 
-					const char* msg_buf = pack_msg(fmsg);
-					send(socket, msg_buf, sizeof(fmsg), 0);
-				}
-				else
-				{
-					fmsg.code = -1;
-					strcpy(fmsg.cmd, "fmsg");
-					strcpy(fmsg.data, "密码错误, 请重试!");
+						const char* msg_buf = pack_msg(fmsg);
+						send(socket, msg_buf, sizeof(fmsg), 0);
+					}
+					else
+					{
+						fmsg.code = -1;
+						strcpy(fmsg.cmd, "fmsg");
+						strcpy(fmsg.data, "密码错误, 请重试!");
 
-					const char* msg_buf = pack_msg(fmsg);
-					send(socket, msg_buf, sizeof(fmsg), 0);
+						const char* msg_buf = pack_msg(fmsg);
+						send(socket, msg_buf, sizeof(fmsg), 0);
+					}
+					break;
 				}
 			}
 			else
 			{
 				perror("数据库查询异常, 不应出现的多条数据");
 			}
+
+			// struct db_row* fpos = NULL;
+			// int i;
+			// list_for_each_entry(fpos, &head.list, list)
+			// {
+			// 	if(fpos != NULL)
+			// 	{
+			// 		if(fpos->argv != NULL)
+			// 		{
+			// 			for(i = 0; i < fpos->argc; i++)
+			// 			{
+			// 				if(fpos->argv[i] != NULL)
+			// 				{
+			// 					free(fpos->argv[i]);
+			// 					fpos->argv[i] = NULL;
+			// 				}
+			// 			}
+			// 			free(fpos->argv);
+			// 			fpos->argv = NULL;
+			// 		}
+			// 		if(fpos->azColName != NULL)
+			// 		{
+			// 			for(i = 0; i < fpos->argc; i++)
+			// 			{
+			// 				if(fpos->azColName[i] != NULL)
+			// 				{
+			// 					free(fpos->azColName[i]);
+			// 					fpos->azColName[i] = NULL;
+			// 				}
+			// 			}
+			// 			free(fpos->azColName);
+			// 			fpos->azColName = NULL;
+			// 		}
+			// 		free(fpos);
+			// 		fpos = NULL;
+			// 	}
+			// }
 		}
 		else
 		{
@@ -112,10 +155,7 @@ int sign_up(const char* data, int socket)
 
 			const char* msg_buf = pack_msg(fmsg);
 			send(socket, msg_buf, sizeof(fmsg), 0);
-			list_for_each_entry(pos, &head.list, list)
-			{
-				free(pos);
-			}
+			//TODO free db_row;
 		}
 		else
 		{
