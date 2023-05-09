@@ -75,4 +75,9 @@ extern int exec_sql(
 	int (*callback)(void* data, int argc, char** argv, char** azColName),
 	void* data);
 extern int close_db();
+
+extern struct db_row* select_for_row(const char* sql_str) {}
+
+extern struct db_row* select_for_rows(const char* sql_str) {}
+
 #endif

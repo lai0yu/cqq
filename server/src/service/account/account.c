@@ -43,7 +43,7 @@ int sign_in(const char* data, int socket)
 						exec_sql(fsql, NULL, NULL);
 
 						fmsg.code = 0;
-						strcpy(fmsg.cmd, "fmsg");
+						strcpy(fmsg.cmd, "server_msg");
 						sprintf(fmsg.data, "用户:%s 成功登陆", sid.username);
 
 						const char* msg_buf = pack_msg(fmsg);
@@ -52,7 +52,7 @@ int sign_in(const char* data, int socket)
 					else
 					{
 						fmsg.code = -1;
-						strcpy(fmsg.cmd, "fmsg");
+						strcpy(fmsg.cmd, "server_msg");
 						strcpy(fmsg.data, "密码错误, 请重试!");
 
 						const char* msg_buf = pack_msg(fmsg);
@@ -106,7 +106,7 @@ int sign_in(const char* data, int socket)
 		else
 		{
 			fmsg.code = -1;
-			strcpy(fmsg.cmd, "fmsg");
+			strcpy(fmsg.cmd, "server_msg");
 			sprintf(fmsg.data, "用户名:%s 不存在", sid.username);
 
 			const char* msg_buf = pack_msg(fmsg);
@@ -144,7 +144,7 @@ int sign_up(const char* data, int socket)
 		if(head.list.next != &head.list)
 		{
 			fmsg.code = -1;
-			strcpy(fmsg.cmd, "fmsg");
+			strcpy(fmsg.cmd, "server_msg");
 			sprintf(fmsg.data, "用户名:%s已存在", sid.username);
 
 			const char* msg_buf = pack_msg(fmsg);
@@ -160,7 +160,7 @@ int sign_up(const char* data, int socket)
 			if(sql_ret == SQLITE_OK)
 			{
 				fmsg.code = 0;
-				strcpy(fmsg.cmd, "fmsg");
+				strcpy(fmsg.cmd, "server_msg");
 				sprintf(fmsg.data, "用户：%s 注册成功", sid.username);
 				const char* msg_buf = pack_msg(fmsg);
 				send(socket, msg_buf, sizeof(fmsg), 0);
@@ -195,7 +195,7 @@ int sign_out(const char* data, int socket)
 	if(update_ret == SQLITE_OK)
 	{
 		fmsg.code = 0;
-		strcpy(fmsg.cmd, "fmsg");
+		strcpy(fmsg.cmd, "server_msg");
 		strcpy(fmsg.data, "成功登出!");
 
 		const char* msg_buf = pack_msg(fmsg);

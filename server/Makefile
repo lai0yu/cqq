@@ -16,10 +16,10 @@ COBJS				:= $(patsubst %, obj/%, $(CFILENDIR:.c=.o))
 OBJS				:= $(COBJS)
 
 $(TARGET) : $(OBJS)
-	$(CC) $(COBJS) -o $@ -lpthread -ljson -lsqlite3
+	$(CC) $(COBJS) -o $@ -lpthreagd -ljson -lsqlite3 -g
 	
 $(OBJS) : obj/%.o : %.c
-	$(CC) -c $< -o $@
+	$(CC) -c $< -o $@ -g
 
 
 .PHONY: clean
