@@ -143,7 +143,6 @@ void fun_login()
 	{
 		printf("请输入功能选项字母\n");
 		scanf("%c", &c);
-		getchar();
 	}
 
 	if(c == 'A')
@@ -159,14 +158,14 @@ void fun_login()
 		int sign_up_ret = sign_up();
 		if(sign_up_ret == 0)
 		{
-			printf(" 按#返回登录界面\n");
+			printf(" 按#返回登录界面：\n");
+
 			char c;
 			scanf("%c", &c);
-			getchar();
+
 			while(c != '#')
 			{
 				scanf("%c", &c);
-				getchar();
 			}
 
 			fun_login();
