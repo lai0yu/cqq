@@ -1,83 +1,71 @@
 #ifndef __SQLITE_UTIL_H__
 #define __SQLITE_UTIL_H__
 
-#include "../linux_list/linux_list.h"
+#include "../../lib/linux_list/linux_list.h"
 #include <sqlite3.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-#define OK 0
-#define ERROR -1
-
 static const char* db_filename = "test.db";
 static sqlite3* ppdb;
-static int row_tick = 0;
 static char* zErrMsg = NULL;
 
-struct db_row
-{
+static char fsql[256];
+
+static const char* select_sql = "select * from %s where %s";
+static const char* insert_sql = "insert   into %s values%s";
+static const char* delete_sql = "delete   from %s where %s";
+static const char* update_sql = "update %s set %s where %s";
+struct select_row {
 	struct list_head list;
 	int argc;
 	char** argv;
 	char** azColName;
+	int index;
 };
 
-static int select_common_callback(void* data, int argc, char** argv, char** azColName)
+static inline int select_callback(void* data, int argc, char** argv, char** azColName)
 {
-	struct db_row* rows = (struct db_row*)data;
-	struct db_row* row = (struct db_row*)malloc(sizeof(struct db_row));
+	struct select_row* head = (struct select_row*)data;
 
-	row->argc = argc;
-	row->argv = (char**)malloc(sizeof(char*) * argc);
-	row->azColName = (char**)malloc(sizeof(char*) * argc);
+	struct select_row* new_row = (struct select_row*)malloc(sizeof(struct select_row));
+	new_row->argc = argc;
+	new_row->argv = (char**)malloc(sizeof(char*) * argc);
+	new_row->azColName = (char**)malloc(sizeof(char*) * argc);
+	new_row->index = ((struct select_row*)(head->list.prev))->index + 1;
+
 	int i;
-	for(i = 0; i < argc; ++i)
-	{
-		row->argv[i] = (char*)malloc(strlen(argv[i]) + 1);
-		row->azColName[i] = (char*)malloc(strlen(azColName[i]) + 1);
-		strcpy(row->argv[i], argv[i]);
-		strcpy(row->azColName[i], azColName[i]);
+	for (i = 0; i < argc; ++i) {
+		new_row->argv[i] = (char*)malloc(strlen(argv[i]) + 1);
+		new_row->azColName[i] = (char*)malloc(strlen(azColName[i]) + 1);
+		strcpy(new_row->argv[i], argv[i]);
+		strcpy(new_row->azColName[i], azColName[i]);
 		printf("%s:%s\t", azColName[i], argv[i]);
 	}
+	list_add_tail(&head->list, &new_row->list);
 	printf("\n");
-
-	list_add(&row->list, &rows->list);
-
-	row_tick++;
-
 	return 0;
 }
 
-static int select_single_callback(void* data, int argc, char** argv, char** azColName)
+static inline int exec_sql(
+	const char* sql_str, int (*callback)(void* data, int argc, char** argv, char** azColName),
+	void* data)
 {
-	struct db_row* rows = (struct db_row*)data;
-	struct db_row* row = (struct db_row*)malloc(sizeof(struct db_row));
-	row->argc = argc;
-	row->argv = (char**)malloc(sizeof(char*) * argc);
-	row->azColName = (char**)malloc(sizeof(char*) * argc);
-	int i;
-	for(i = 0; i < argc; ++i)
-	{
-		row->argv[i] = (char*)malloc(strlen(argv[i]) + 1);
-		row->azColName[i] = (char*)malloc(strlen(azColName[i]) + 1);
-		strcpy(row->argv[i], argv[i]);
-		strcpy(row->azColName[i], azColName[i]);
-		printf("%s:%s\t", azColName[i], argv[i]);
+	zErrMsg = 0;
+	int rc = sqlite3_exec(ppdb, sql_str, callback, data, &zErrMsg);
+	if (rc != SQLITE_OK) {
+		fprintf(stderr, "SQL ERROR: %s\n", zErrMsg);
+		sqlite3_free(zErrMsg);
+	} else {
+		fprintf(stdout, "Operation done successfully\n");
 	}
-
-	return 0;
+	return rc;
 }
 
-extern int open_db();
-extern int exec_sql(
-	const char* sql_str,
-	int (*callback)(void* data, int argc, char** argv, char** azColName),
-	void* data);
-extern int close_db();
-
-extern struct db_row* select_for_row(const char* sql_str) {}
-
-extern struct db_row* select_for_rows(const char* sql_str) {}
+extern int db_insert(const char* table_columns, const char* values);
+extern int db_delete(const char* table, const char* where);
+extern struct select_row db_select(const char* table, const char* where);
+extern int db_update(const char* table, const char* sets, const char* where);
 
 #endif
