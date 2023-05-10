@@ -16,18 +16,13 @@
 // 最大连接数
 #define MAX_CONNECT 1000
 
-handle_client(int code, const char* data) {
+void handle_client(int csocket,int code, const char* data) {
 
 	switch (code) {
-	case SIGN_UP:
-		break;
-	case SIGN_DEL:
-		break;
-	case SIGN_IN:
-		break;
-	case SIGN_OUT:
-		break;
-
+	case SIGN_UP:sign_up(data,csocket);break;
+	case SIGN_DEL:sign_del(data,csocket);break;
+	case SIGN_IN:sign_in(data,csocket);break;
+	case SIGN_OUT:sign_out(data,csocket);break;
 	default:
 		break;
 	}
@@ -125,7 +120,7 @@ int main(int argc, char* argv[]) {
 
 					if (recv_ret > 0) {
 						struct msg cmsg = parse_msg(recv_buf);
-
+						handle_client(client_socks[i],cmsg.code,cmsg.data);
 						printf("Message from client %s:%d==>%s\n",
 							   inet_ntoa(client_addrs[i]->sin_addr),
 							   ntohs(client_addrs[i]->sin_port), recv_buf);
