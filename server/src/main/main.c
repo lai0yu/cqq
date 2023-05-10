@@ -12,7 +12,6 @@
 
 #include "../service/account/account.h"
 #include "../service/single_chat/single_chat.h"
-#include "msg_code.h"
 
 // 最大连接数
 #define MAX_CONNECT 1000
