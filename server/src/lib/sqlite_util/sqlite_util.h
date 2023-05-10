@@ -8,8 +8,7 @@
 #include <string.h>
 
 static const char* db_filename = "test.db";
-static sqlite3* ppdb;
-static char* zErrMsg = NULL;
+sqlite3* ppdb;
 
 static char fsql[1024];
 static const char* select_sql = "select %s from %s where %s";
@@ -63,7 +62,8 @@ static int select_callback(void* data, int argc, char** argv, char** azColName) 
 static int exec_sql(const char* sql_str,
 					int (*callback)(void* data, int argc, char** argv, char** azColName),
 					void* data) {
-	zErrMsg = 0;
+	char* zErrMsg;
+	printf("%s\n",sql_str);
 	int rc = sqlite3_exec(ppdb, sql_str, callback, data, &zErrMsg);
 	if (rc != SQLITE_OK) {
 		fprintf(stderr, "SQL ERROR: %s\n", zErrMsg);

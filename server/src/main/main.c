@@ -52,7 +52,6 @@ int main(int argc, char* argv[]) {
 
 	db_open();
 	init_account_service();
-	init_singlechat_service();
 
 	int client_socks[MAX_CONNECT] = { -1 };
 	struct sockaddr_in* client_addrs[MAX_CONNECT] = { NULL };

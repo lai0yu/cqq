@@ -84,7 +84,6 @@ void login_ui()
 
 void main_ui()
 {
-
 	printf("***************功能界面*****************\n");
 	printf("*                                     *\n");
 	printf("*              1:好友列表              *\n");
