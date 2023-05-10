@@ -22,13 +22,13 @@ int sign_up(const char* data, int socket) {
 
 	int count = list_entry(row_head.list.prev, struct select_row, list)->index;
 
-	if (count < 1) {
-		send_msg(socket, SIGN_IN_NO_USER, "无此用户");
+	if (count > 0) {
+		send_msg(socket, SIGN_UP_DUP_USER, "用户名已经存在");
 	} else {
 		char values_buf[256] = { 0 };
 		sprintf(values_buf, "('%s','%s')", sd.username, sd.password);
 		db_insert("tb_account(username,password)", values_buf);
-		send_msg(socket, SIGN_IN_SUCCESS, "注册成功");
+		send_msg(socket, SIGN_UP_SUCCESS, "注册成功");
 	}
 	free_select_rows_list(&row_head);
 	return 0;

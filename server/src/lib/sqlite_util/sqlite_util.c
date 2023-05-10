@@ -1,8 +1,8 @@
 #include "sqlite_util.h"
 
-int db_insert(const char* table_columns, const char* where) {
+int db_insert(const char* table_columns, const char* values) {
 	bzero(fsql, sizeof(fsql));
-	sprintf(fsql, insert_sql, table_columns, where);
+	sprintf(fsql, insert_sql, table_columns, values);
 	return exec_sql(fsql, NULL, NULL);
 }
 

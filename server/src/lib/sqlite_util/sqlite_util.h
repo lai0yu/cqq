@@ -45,7 +45,7 @@ static int select_callback(void* data, int argc, char** argv, char** azColName) 
 	new_row->argc = argc;
 	new_row->argv = (char**)malloc(sizeof(char*) * argc);
 	new_row->azColName = (char**)malloc(sizeof(char*) * argc);
-	new_row->index = ((struct select_row*)(head->list.prev))->index + 1;
+	new_row->index = list_entry(head->list.prev, struct select_row,list)->index + 1;
 
 	int i;
 	for (i = 0; i < argc; ++i) {
