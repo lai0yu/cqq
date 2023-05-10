@@ -19,17 +19,17 @@ static const char* sql_create_account_table = "create table if not exists tb_acc
 #define SIGN_IN_NO_USER 3
 #define SIGN_IN_PW_ERROR 4
 
-#define SING_OUT 1
-#define SING_OUT_SUCCESS 2
+#define SIGN_OUT 11
+#define SIGN_OUT_SUCCESS 12
 
-#define SIGN_UP 1
-#define SING_UP_SUCCESS 2
-#define SING_UP_DUP_USER 3
+#define SIGN_UP 21
+#define SIGN_UP_SUCCESS 22
+#define SIGN_UP_DUP_USER 23
 
-#define SIGN_DEL 1
-#define SIGN_DEL_SUCCESS 2
-#define SIGN_DEL_NO_USER 3
-#define SIGN_DEL_PW_ERROR 4
+#define SIGN_DEL 31
+#define SIGN_DEL_SUCCESS 32
+#define SIGN_DEL_NO_USER 33
+#define SIGN_DEL_PW_ERROR 34
 
 extern int init_account_service();
 extern int sign_in(const char* data, int socket);

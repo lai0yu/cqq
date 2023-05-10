@@ -12,12 +12,27 @@
 
 #include "../service/account/account.h"
 #include "../service/single_chat/single_chat.h"
-#include "msg_code.h";
+#include "msg_code.h"
 
 // 最大连接数
 #define MAX_CONNECT 1000
 
-handle() {}
+handle_client(int code, const char* data) {
+
+	switch (code) {
+	case SIGN_UP:
+		break;
+	case SIGN_DEL:
+		break;
+	case SIGN_IN:
+		break;
+	case SIGN_OUT:
+		break;
+
+	default:
+		break;
+	}
+}
 
 int main(int argc, char* argv[]) {
 	// 默认服务器IP 端口
@@ -41,7 +56,7 @@ int main(int argc, char* argv[]) {
 
 	listen(serv_sock, MAX_CONNECT);
 
-	open_db();
+	db_open();
 	init_account_service();
 	init_singlechat_service();
 

@@ -25,7 +25,20 @@ struct select_row {
 	int index;
 };
 
-static inline int select_callback(void* data, int argc, char** argv, char** azColName) {
+static int db_open() {
+	int rc = sqlite3_open("test.db", &ppdb);
+
+	if (rc) {
+		fprintf(stderr, "Can't open database: %s\n", sqlite3_errmsg(ppdb));
+		exit(0);
+	} else {
+		fprintf(stderr, "Opened database successfully\n");
+	}
+	return rc;
+}
+
+static inline int db_close() { return sqlite3_close(ppdb); }
+static int select_callback(void* data, int argc, char** argv, char** azColName) {
 	struct select_row* head = (struct select_row*)data;
 
 	struct select_row* new_row = (struct select_row*)malloc(sizeof(struct select_row));
@@ -47,9 +60,9 @@ static inline int select_callback(void* data, int argc, char** argv, char** azCo
 	return 0;
 }
 
-static inline int exec_sql(const char* sql_str,
-						   int (*callback)(void* data, int argc, char** argv, char** azColName),
-						   void* data) {
+static int exec_sql(const char* sql_str,
+					int (*callback)(void* data, int argc, char** argv, char** azColName),
+					void* data) {
 	zErrMsg = 0;
 	int rc = sqlite3_exec(ppdb, sql_str, callback, data, &zErrMsg);
 	if (rc != SQLITE_OK) {

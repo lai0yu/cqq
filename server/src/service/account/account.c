@@ -96,6 +96,6 @@ int sign_out(const char* data, int socket) {
 	char where_buf[256] = { 0 };
 	sprintf(where_buf, "username=='%s", sd.username);
 	db_update("tb_account", "set socket=-1", where_buf);
-	send_msg(socket, SING_OUT_SUCCESS, "登出成功");
+	send_msg(socket, SIGN_OUT_SUCCESS, "登出成功");
 	return 0;
 }
