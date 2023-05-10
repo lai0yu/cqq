@@ -68,6 +68,21 @@ int sign(char code)
 	return send_msg(serv_sock, code, psd);
 }
 
+void* recv_work(void* arg)
+{
+	char buf[512];
+	int recv_ret = -1;
+	while(1)
+	{
+		bzero(buf, sizeof(buf));
+		int recv_ret = recv(*(int*)(arg), buf, sizeof(buf), 0);
+		if(recv_ret > 0)
+		{
+			printf("%s\n", buf);
+		}
+	}
+}
+
 
 void login_ui()
 {
@@ -97,6 +112,7 @@ void main_ui()
 
 void fun_login()
 {
+	login_ui();
 	unsigned char c;
 	scanf("%hhd",&c);
 

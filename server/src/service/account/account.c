@@ -18,9 +18,9 @@ int sign_up(const char* data, int socket) {
 
 	char where_buf[256] = { 0 };
 	sprintf(where_buf, "username=='%s'", sd.username);
-	struct select_row row_head = db_select("tb_account", "(password,socket)", where_buf);
+	struct select_row* row_head = db_select("tb_account", "password,socket", where_buf);
 
-	int count = list_entry(row_head.list.prev, struct select_row, list)->index;
+	int count = list_entry(row_head->list.prev, struct select_row, list)->index;
 
 	if (count > 0) {
 		send_msg(socket, SIGN_UP_DUP_USER, "用户名已经存在");
@@ -30,7 +30,7 @@ int sign_up(const char* data, int socket) {
 		db_insert("tb_account(username,password)", values_buf);
 		send_msg(socket, SIGN_UP_SUCCESS, "注册成功");
 	}
-	free_select_rows_list(&row_head);
+	free_select_rows_list(row_head);
 	return 0;
 }
 
@@ -40,13 +40,13 @@ int sign_del(const char* data, int socket) {
 
 	char where_buf[256] = { 0 };
 	sprintf(where_buf, "username=='%s", sd.username);
-	struct select_row row_head = db_select("tb_account", "(password,socket)", where_buf);
+	struct select_row* row_head = db_select("tb_account", "(password,socket)", where_buf);
 
-	int count = list_entry(row_head.list.prev, struct select_row, list)->index;
+	int count = list_entry(row_head->list.prev, struct select_row, list)->index;
 	if (count < 1) {
 		send_msg(socket, SIGN_DEL_NO_USER, "无此用户");
 	} else {
-		char* db_password = list_entry(row_head.list.next, struct select_row, list)->argv[0];
+		char* db_password = list_entry(row_head->list.next, struct select_row, list)->argv[0];
 		int cmp = strcmp(db_password, sd.username);
 		if (cmp == 0) {
 			char where_buf[256] = { 0 };
@@ -57,7 +57,7 @@ int sign_del(const char* data, int socket) {
 			send_msg(socket, SIGN_DEL_PW_ERROR, "密码错误");
 		}
 	}
-	free_select_rows_list(&row_head);
+	free_select_rows_list(row_head);
 	return 0;
 }
 
@@ -66,14 +66,14 @@ int sign_in(const char* data, int socket) {
 
 	char where_buf[256] = { 0 };
 	sprintf(where_buf, "username=='%s'", sd.username);
-	struct select_row row_head = db_select("tb_account", "(password,socket)", where_buf);
+	struct select_row* row_head = db_select("tb_account", "password,socket", where_buf);
 
-	int count = list_entry(row_head.list.prev, struct select_row, list)->index;
+	int count = list_entry(row_head->list.prev, struct select_row, list)->index;
 
 	if (count < 1) {
 		send_msg(socket, SIGN_IN_NO_USER, "无此用户");
 	} else {
-		char* db_password = list_entry(row_head.list.next, struct select_row, list)->argv[0];
+		char* db_password = list_entry(row_head->list.next, struct select_row, list)->argv[0];
 		int cmp = strcmp(db_password, sd.username);
 		if (cmp == 0) {
 
@@ -87,7 +87,7 @@ int sign_in(const char* data, int socket) {
 			send_msg(socket, SIGN_IN_PW_ERROR, "密码错误");
 		}
 	}
-	free_select_rows_list(&row_head);
+	free_select_rows_list(row_head);
 	return 0;
 }
 
