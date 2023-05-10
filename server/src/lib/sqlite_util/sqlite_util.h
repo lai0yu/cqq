@@ -11,11 +11,12 @@ static const char* db_filename = "test.db";
 static sqlite3* ppdb;
 static char* zErrMsg = NULL;
 
-static char fsql[256];
-static const char* select_sql = "select * from %s where %s";
-static const char* insert_sql = "insert   into %s values%s";
-static const char* delete_sql = "delete   from %s where %s";
-static const char* update_sql = "update %s set %s where %s";
+static char fsql[1024];
+static const char* select_sql = "select %s from %s where %s";
+static const char* insert_sql = "insert    into %s values%s";
+static const char* delete_sql = "delete    from %s where %s";
+static const char* update_sql = "update %s set  %s where %s";
+
 struct select_row {
 	struct list_head list;
 	int argc;
@@ -24,8 +25,7 @@ struct select_row {
 	int index;
 };
 
-static inline int select_callback(void* data, int argc, char** argv, char** azColName)
-{
+static inline int select_callback(void* data, int argc, char** argv, char** azColName) {
 	struct select_row* head = (struct select_row*)data;
 
 	struct select_row* new_row = (struct select_row*)malloc(sizeof(struct select_row));
@@ -47,10 +47,9 @@ static inline int select_callback(void* data, int argc, char** argv, char** azCo
 	return 0;
 }
 
-static inline int exec_sql(
-	const char* sql_str, int (*callback)(void* data, int argc, char** argv, char** azColName),
-	void* data)
-{
+static inline int exec_sql(const char* sql_str,
+						   int (*callback)(void* data, int argc, char** argv, char** azColName),
+						   void* data) {
 	zErrMsg = 0;
 	int rc = sqlite3_exec(ppdb, sql_str, callback, data, &zErrMsg);
 	if (rc != SQLITE_OK) {
@@ -64,7 +63,7 @@ static inline int exec_sql(
 
 extern int db_insert(const char* table_columns, const char* values);
 extern int db_delete(const char* table, const char* where);
-extern struct select_row db_select(const char* table, const char* where);
+extern struct select_row db_select(const char* table, const char* columns, const char* where);
 extern int db_update(const char* table, const char* sets, const char* where);
-
+extern void free_select_rows_list(struct select_row* row_head);
 #endif

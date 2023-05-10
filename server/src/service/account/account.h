@@ -9,48 +9,31 @@
 #include <sys/socket.h>
 
 static const char* sql_create_account_table = "create table if not exists tb_account(\
-  id integer PRIMARY KEY autoincrement,\
-  username char[64] UNIQUE,\
+  username char[64] PRIMARY KEY,\
   password char[64],\
   socket integer default -1,\
-  create_at datetime default (datetime('now', 'localtime')),\
-  update_at datetime default (datetime('now', 'localtime'))\
 )";
 
-static const char* sql_insert_account =
-	"insert into tb_account(username,password) values('%s','%s')";
-static const char* sql_select_by_username = "select * from tb_account where username=='%s'";
-static const char* sql_update_username_by_id = "update tb_account set username='%s' where id=%d";
-static const char* sql_update_password_by_id = "update tb_account set password='%s' where id=%d";
-static const char* sql_delete_by_username = "delete from tb_account where username='%s'";
-static const char* sql_update_socket_by_username =
-	"update tb_account set socket=%d where username='%s'";
+#define SIGN_IN 1
+#define SIGN_IN_SUCCESS 2
+#define SIGN_IN_NO_USER 3
+#define SIGN_IN_PW_ERROR 4
 
-struct si_data
-{
-	char username[64];
-	char password[64];
-};
+#define SING_OUT 1
+#define SING_OUT_SUCCESS 2
 
-static inline struct si_data parse_sign_in_data(const char* json_str)
-{
-	struct si_data pack;
+#define SIGN_UP 1
+#define SING_UP_SUCCESS 2
+#define SING_UP_DUP_USER 3
 
-	memset(&pack, 0, sizeof(pack));
-
-	struct json_object* object = json_tokener_parse(json_str);
-
-	struct json_object* obj_username_str = json_object_object_get(object, "username");
-	struct json_object* obj_password_str = json_object_object_get(object, "password");
-
-	strcpy(pack.username, json_object_get_string(obj_username_str));
-	strcpy(pack.password, json_object_get_string(obj_password_str));
-
-	return pack;
-}
+#define SIGN_DEL 1
+#define SIGN_DEL_SUCCESS 2
+#define SIGN_DEL_NO_USER 3
+#define SIGN_DEL_PW_ERROR 4
 
 extern int init_account_service();
 extern int sign_in(const char* data, int socket);
+extern int sign_del(const char* data, int socket);
 extern int sign_up(const char* data, int socket);
 extern int sign_out(const char* data, int socket);
 

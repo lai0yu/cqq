@@ -2,193 +2,100 @@
 
 int init_account_service() { return exec_sql(sql_create_account_table, NULL, NULL); }
 
-int sign_in(const char* data, int socket)
-{
-	// struct msg fmsg;
-	// memset(&fmsg, 0, sizeof(fmsg));
-	// fmsg.code = -1;
+static int send_msg(int socket, int code, char* data) {
+	struct msg smsg;
+	memset(&smsg, 0, sizeof(struct msg));
+	smsg.code = code;
+	strcpy(smsg.data, data);
 
-	// struct si_data sid = parse_sign_in_data(data);
-
-	// char fsql[512];
-	// bzero(fsql, sizeof(fsql));
-	// sprintf(fsql, sql_select_by_username, sid.username);
-
-	// struct db_row head;
-	// INIT_LIST_HEAD(&head.list);
-	// struct db_row* pos;
-
-	// int select_ret = exec_sql(fsql, select_common_callback, (void*)&head);
-	// if(select_ret == SQLITE_OK)
-	// {
-
-	// 	if(head.list.next != &head.list)
-	// 	{
-	// 		if(row_tick == 1)
-	// 		{
-	// 			list_for_each_entry(pos, &head.list, list)
-	// 			{
-	// 				int password_cmp = strcmp(sid.password, pos->argv[2]);
-	// 				printf("%s\n", pos->argv[2]);
-	// 				printf("%s\n", sid.password);
-	// 				if(password_cmp == 0)
-	// 				{
-	// 					char fsql[512];
-	// 					bzero(fsql, sizeof(fsql));
-	// 					sprintf(fsql, sql_update_socket_by_username, socket, sid.username);
-
-	// 					exec_sql(fsql, NULL, NULL);
-
-	// 					fmsg.code = 0;
-	// 					strcpy(fmsg.cmd, "server_msg");
-	// 					sprintf(fmsg.data, "用户:%s 成功登陆", sid.username);
-
-	// 					const char* msg_buf = pack_msg(fmsg);
-	// 					send(socket, msg_buf, sizeof(fmsg), 0);
-	// 				}
-	// 				else
-	// 				{
-	// 					fmsg.code = -1;
-	// 					strcpy(fmsg.cmd, "server_msg");
-	// 					strcpy(fmsg.data, "密码错误, 请重试!");
-
-	// 					const char* msg_buf = pack_msg(fmsg);
-	// 					send(socket, msg_buf, sizeof(fmsg), 0);
-	// 				}
-	// 				break;
-	// 			}
-	// 		}
-	// 		else
-	// 		{
-	// 			perror("数据库查询异常, 不应出现的多条数据");
-	// 		}
-
-	// 		// struct db_row* fpos = NULL;
-	// 		// int i;
-	// 		// list_for_each_entry(fpos, &head.list, list)
-	// 		// {
-	// 		// 	if(fpos != NULL)
-	// 		// 	{
-	// 		// 		if(fpos->argv != NULL)
-	// 		// 		{
-	// 		// 			for(i = 0; i < fpos->argc; i++)
-	// 		// 			{
-	// 		// 				if(fpos->argv[i] != NULL)
-	// 		// 				{
-	// 		// 					free(fpos->argv[i]);
-	// 		// 					fpos->argv[i] = NULL;
-	// 		// 				}
-	// 		// 			}
-	// 		// 			free(fpos->argv);
-	// 		// 			fpos->argv = NULL;
-	// 		// 		}
-	// 		// 		if(fpos->azColName != NULL)
-	// 		// 		{
-	// 		// 			for(i = 0; i < fpos->argc; i++)
-	// 		// 			{
-	// 		// 				if(fpos->azColName[i] != NULL)
-	// 		// 				{
-	// 		// 					free(fpos->azColName[i]);
-	// 		// 					fpos->azColName[i] = NULL;
-	// 		// 				}
-	// 		// 			}
-	// 		// 			free(fpos->azColName);
-	// 		// 			fpos->azColName = NULL;
-	// 		// 		}
-	// 		// 		free(fpos);
-	// 		// 		fpos = NULL;
-	// 		// 	}
-	// 		// }
-	// 	}
-	// 	else
-	// 	{
-	// 		fmsg.code = -1;
-	// 		strcpy(fmsg.cmd, "server_msg");
-	// 		sprintf(fmsg.data, "用户名:%s 不存在", sid.username);
-
-	// 		const char* msg_buf = pack_msg(fmsg);
-	// 		send(socket, msg_buf, sizeof(fmsg), 0);
-	// 	}
-	// }
-	// else
-	// {
-	// 	perror("数据库查询异常, 不应出现的多条数据");
-	// }
-	// row_tick = 0;
-	// return fmsg.code;
+	char msg_buf[1024] = { 0 };
+	pack_msg(smsg, msg_buf);
+	return send(socket, msg_buf, strlen(msg_buf) + 1, 0);
 }
 
-int sign_up(const char* data, int socket)
-{
-	struct msg fmsg;
-	memset(&fmsg, 0, sizeof(fmsg));
-	fmsg.code = -1;
+int sign_up(const char* data, int socket) {
+	struct sign_data sd = parse_signdata(data);
 
-	struct si_data sid = parse_sign_in_data(data);
+	char where_buf[256] = { 0 };
+	sprintf(where_buf, "username=='%s'", sd.username);
+	struct select_row row_head = db_select("tb_account", "(password,socket)", where_buf);
 
-	char fsql[512];
-	bzero(fsql, sizeof(fsql));
-	sprintf(fsql, sql_select_by_username, sid.username);
+	int count = list_entry(row_head.list.prev, struct select_row, list)->index;
 
-	struct db_row head;
-	INIT_LIST_HEAD(&head.list);
-	struct db_row* pos;
-
-	int select_ret = exec_sql(fsql, select_common_callback, (void*)&head);
-
-	if (select_ret == SQLITE_OK) {
-		if (head.list.next != &head.list) {
-			fmsg.code = -1;
-			strcpy(fmsg.cmd, "server_msg");
-			sprintf(fmsg.data, "用户名:%s已存在", sid.username);
-
-			const char* msg_buf = pack_msg(fmsg);
-			send(socket, msg_buf, sizeof(fmsg), 0);
-			// TODO free db_row;
-		} else {
-
-			bzero(fsql, sizeof(fsql));
-			sprintf(fsql, sql_insert_account, sid.username, sid.password);
-			int sql_ret = exec_sql(fsql, NULL, NULL);
-			if (sql_ret == SQLITE_OK) {
-				fmsg.code = 0;
-				strcpy(fmsg.cmd, "server_msg");
-				sprintf(fmsg.data, "用户：%s 注册成功", sid.username);
-				const char* msg_buf = pack_msg(fmsg);
-				send(socket, msg_buf, sizeof(fmsg), 0);
-			}
-		}
+	if (count < 1) {
+		send_msg(socket, SIGN_IN_NO_USER, "无此用户");
 	} else {
-		perror("数据库查询异常");
+		char values_buf[256] = { 0 };
+		sprintf(values_buf, "('%s','%s')", sd.username, sd.password);
+		db_insert("tb_account(username,password)", values_buf);
+		send_msg(socket, SIGN_IN_SUCCESS, "注册成功");
 	}
-	row_tick = 0;
-	return fmsg.code;
+	free_select_rows_list(&row_head);
+	return 0;
 }
 
-int sign_out(const char* data, int socket)
-{
-	struct msg fmsg;
-	memset(&fmsg, 0, sizeof(fmsg));
-	fmsg.code = -1;
+int sign_del(const char* data, int socket) {
 
-	char username[64];
-	struct json_object* object = json_tokener_parse(data);
-	struct json_object* obj_username_str = json_object_object_get(object, "username");
-	strcpy(username, json_object_get_string(obj_username_str));
+	struct sign_data sd = parse_signdata(data);
 
-	char fsql[512];
-	bzero(fsql, sizeof(fsql));
-	sprintf(fsql, sql_update_socket_by_username, -1, username);
+	char where_buf[256] = { 0 };
+	sprintf(where_buf, "username=='%s", sd.username);
+	struct select_row row_head = db_select("tb_account", "(password,socket)", where_buf);
 
-	int update_ret = exec_sql(fsql, NULL, NULL);
-
-	if (update_ret == SQLITE_OK) {
-		fmsg.code = 0;
-		strcpy(fmsg.cmd, "server_msg");
-		strcpy(fmsg.data, "成功登出!");
-
-		const char* msg_buf = pack_msg(fmsg);
-		send(socket, msg_buf, sizeof(fmsg), 0);
+	int count = list_entry(row_head.list.prev, struct select_row, list)->index;
+	if (count < 1) {
+		send_msg(socket, SIGN_DEL_NO_USER, "无此用户");
+	} else {
+		char* db_password = list_entry(row_head.list.next, struct select_row, list)->argv[0];
+		int cmp = strcmp(db_password, sd.username);
+		if (cmp == 0) {
+			char where_buf[256] = { 0 };
+			sprintf(where_buf, "username=='%s'", sd.username);
+			db_delete("tb_account", where_buf);
+			send_msg(socket, SIGN_DEL_SUCCESS, "注销账户成功");
+		} else {
+			send_msg(socket, SIGN_DEL_PW_ERROR, "密码错误");
+		}
 	}
-	return fmsg.code;
+	free_select_rows_list(&row_head);
+	return 0;
+}
+
+int sign_in(const char* data, int socket) {
+	struct sign_data sd = parse_signdata(data);
+
+	char where_buf[256] = { 0 };
+	sprintf(where_buf, "username=='%s'", sd.username);
+	struct select_row row_head = db_select("tb_account", "(password,socket)", where_buf);
+
+	int count = list_entry(row_head.list.prev, struct select_row, list)->index;
+
+	if (count < 1) {
+		send_msg(socket, SIGN_IN_NO_USER, "无此用户");
+	} else {
+		char* db_password = list_entry(row_head.list.next, struct select_row, list)->argv[0];
+		int cmp = strcmp(db_password, sd.username);
+		if (cmp == 0) {
+
+			char sets_buf[256] = { 0 }, where_buf[256] = { 0 };
+			sprintf(sets_buf, "socket=%d", socket);
+			sprintf(where_buf, "username=='%s'", sd.username);
+			db_update("tb_account", sets_buf, where_buf);
+
+			send_msg(socket, SIGN_IN_SUCCESS, "登录成功");
+		} else {
+			send_msg(socket, SIGN_IN_PW_ERROR, "密码错误");
+		}
+	}
+	free_select_rows_list(&row_head);
+	return 0;
+}
+
+int sign_out(const char* data, int socket) {
+	struct sign_data sd = parse_signdata(data);
+	char where_buf[256] = { 0 };
+	sprintf(where_buf, "username=='%s", sd.username);
+	db_update("tb_account", "set socket=-1", where_buf);
+	send_msg(socket, SING_OUT_SUCCESS, "登出成功");
+	return 0;
 }

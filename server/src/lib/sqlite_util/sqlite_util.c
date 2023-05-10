@@ -1,43 +1,38 @@
 #include "sqlite_util.h"
 
-int db_insert(const char* table_columns, const char* where)
-{
+int db_insert(const char* table_columns, const char* where) {
 	bzero(fsql, sizeof(fsql));
 	sprintf(fsql, insert_sql, table_columns, where);
 	return exec_sql(fsql, NULL, NULL);
 }
 
-int db_delete(const char* table, const char* where)
-{
+int db_delete(const char* table, const char* where) {
 	bzero(fsql, sizeof(fsql));
 	sprintf(fsql, delete_sql, table, where);
 	return exec_sql(fsql, NULL, NULL);
 }
 
-struct select_row db_select(const char* table, const char* where)
-{
+struct select_row db_select(const char* table, const char* columns, const char* where) {
 	struct select_row row_head;
+	INIT_LIST_HEAD(&row_head.list);
 	row_head.index = 0;
 	bzero(fsql, sizeof(fsql));
-	sprintf(fsql, select_sql, table, where);
+	sprintf(fsql, select_sql, table, columns, where);
 	exec_sql(fsql, select_callback, &row_head);
 	return row_head;
 }
 
-int db_update(const char* table, const char* sets, const char* where)
-{
+int db_update(const char* table, const char* sets, const char* where) {
 	bzero(fsql, sizeof(fsql));
 	sprintf(fsql, delete_sql, table, sets, where);
 	return exec_sql(fsql, NULL, NULL);
 }
 
-void free_select_rows_list(struct select_row* row_head)
-{
+void free_select_rows_list(struct select_row* row_head) {
 	struct select_row* pos;
 
 	int i;
-	list_for_each_entry(pos, &row_head->list, list)
-	{
+	list_for_each_entry(pos, &row_head->list, list) {
 		if (pos != NULL) { continue; }
 		if (pos->argv != NULL) {
 			for (i = 0; i < pos->argc; i++) {
@@ -64,4 +59,5 @@ void free_select_rows_list(struct select_row* row_head)
 		list_del(row_head->list.next);
 		free(next_row);
 	}
+	row_head = NULL;
 }

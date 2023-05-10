@@ -12,18 +12,19 @@
 
 #include "../service/account/account.h"
 #include "../service/single_chat/single_chat.h"
+#include "msg_code.h";
 
 // 最大连接数
 #define MAX_CONNECT 1000
 
-int main(int argc, char* argv[])
-{
+handle() {}
+
+int main(int argc, char* argv[]) {
 	// 默认服务器IP 端口
 	char serv_ip[128] = "192.168.60.91";
 	char serv_port[128] = "54321";
 
-	if(argc == 3)
-	{
+	if (argc == 3) {
 		bzero(serv_ip, sizeof(serv_ip));
 		bzero(serv_port, sizeof(serv_port));
 		strcpy(serv_ip, argv[1]);
@@ -44,8 +45,8 @@ int main(int argc, char* argv[])
 	init_account_service();
 	init_singlechat_service();
 
-	int client_socks[MAX_CONNECT] = {-1};
-	struct sockaddr_in* client_addrs[MAX_CONNECT] = {NULL};
+	int client_socks[MAX_CONNECT] = { -1 };
+	struct sockaddr_in* client_addrs[MAX_CONNECT] = { NULL };
 	int ccount = 0;
 	fd_set fdset;
 
@@ -58,57 +59,38 @@ int main(int argc, char* argv[])
 	struct sockaddr_in* nclient_addr = NULL;
 
 	char recv_buf[1284];
-	while(1)
-	{
+	while (1) {
 
 		FD_ZERO(&fdset);
 		FD_SET(serv_sock, &fdset);
 
-		for(i = 0; i < ccount; i++)
-		{
-			if(client_socks[i] > 0)
-			{
-				FD_SET(client_socks[i], &fdset);
-			}
+		for (i = 0; i < ccount; i++) {
+			if (client_socks[i] > 0) { FD_SET(client_socks[i], &fdset); }
 		}
 		select_ret = select(MAX_CONNECT + 1, &fdset, NULL, NULL, &tv);
-		if(select_ret < 0)
-		{
+		if (select_ret < 0) {
 			perror("select failed");
 			break;
-		}
-		else if(select_ret == 0)
-		{
+		} else if (select_ret == 0) {
 			continue;
-		}
-		else
-		{
-			if(FD_ISSET(serv_sock, &fdset))
-			{
+		} else {
+			if (FD_ISSET(serv_sock, &fdset)) {
 				nclient_addr = (struct sockaddr_in*)malloc(sizeof(struct sockaddr_in));
 				nclient_sock = accept(serv_sock, (struct sockaddr*)nclient_addr, &nc_size);
-				if(nclient_sock > 0)
-				{
-					if(ccount <= MAX_CONNECT)
-					{
+				if (nclient_sock > 0) {
+					if (ccount <= MAX_CONNECT) {
 						client_addrs[ccount] = nclient_addr;
 						client_socks[ccount] = nclient_sock;
 						ccount++;
 						// TODO:Send Client Connect OK;
 						// TODO:Update online table
 
-						printf(
-							"A new client %s:%d has connected!\n",
-							inet_ntoa(nclient_addr->sin_addr),
-							ntohs(nclient_addr->sin_port));
-					}
-					else
-					{
-						printf(
-							"A new client %s:%d connect has been refuse because max "
-							"connect!\n",
-							inet_ntoa(nclient_addr->sin_addr),
-							ntohs(nclient_addr->sin_port));
+						printf("A new client %s:%d has connected!\n",
+							   inet_ntoa(nclient_addr->sin_addr), ntohs(nclient_addr->sin_port));
+					} else {
+						printf("A new client %s:%d connect has been refuse because max "
+							   "connect!\n",
+							   inet_ntoa(nclient_addr->sin_addr), ntohs(nclient_addr->sin_port));
 
 						// TODO：Send Client message Has Been refuse cause of max connect!
 
@@ -122,34 +104,17 @@ int main(int argc, char* argv[])
 				}
 			}
 			int i;
-			for(i = 0; i < ccount; i++)
-			{
-				if(FD_ISSET(client_socks[i], &fdset))
-				{
+			for (i = 0; i < ccount; i++) {
+				if (FD_ISSET(client_socks[i], &fdset)) {
 					bzero(recv_buf, sizeof(recv_buf));
 					int recv_ret = recv(client_socks[i], recv_buf, sizeof(recv_buf), 0);
 
-					if(recv_ret > 0)
-					{
+					if (recv_ret > 0) {
 						struct msg cmsg = parse_msg(recv_buf);
-						if(strcmp(cmsg.cmd, "sign_in") == 0)
-						{
-							int ret = sign_in(cmsg.data, client_socks[i]);
-						}
-						else if(strcmp(cmsg.cmd, "sign_up") == 0)
-						{
-							int ret = sign_up(cmsg.data, client_socks[i]);
-						}
-						else if(strcmp(cmsg.cmd, "sign_out") == 0)
-						{
-							int ret = sign_out(cmsg.data, client_socks[i]);
-						}
 
-						printf(
-							"Message from client %s:%d==>%s\n",
-							inet_ntoa(client_addrs[i]->sin_addr),
-							ntohs(client_addrs[i]->sin_port),
-							recv_buf);
+						printf("Message from client %s:%d==>%s\n",
+							   inet_ntoa(client_addrs[i]->sin_addr),
+							   ntohs(client_addrs[i]->sin_port), recv_buf);
 					}
 				}
 			}
@@ -157,15 +122,12 @@ int main(int argc, char* argv[])
 	}
 
 	close(serv_sock);
-	for(i = 0; i < MAX_CONNECT; i++)
-	{
-		if(client_addrs[i] != NULL)
-		{
+	for (i = 0; i < MAX_CONNECT; i++) {
+		if (client_addrs[i] != NULL) {
 			free(client_addrs[i]);
 			client_addrs[i] = NULL;
 		}
-		if(client_socks >= 0)
-		{
+		if (client_socks >= 0) {
 			close(client_socks[i]);
 			client_socks[i] = -1;
 		}
