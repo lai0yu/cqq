@@ -12,7 +12,6 @@ static sqlite3* ppdb;
 static char* zErrMsg = NULL;
 
 static char fsql[256];
-
 static const char* select_sql = "select * from %s where %s";
 static const char* insert_sql = "insert   into %s values%s";
 static const char* delete_sql = "delete   from %s where %s";
