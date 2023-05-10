@@ -12,6 +12,8 @@ static const char* sql_create_account_table = "create table if not exists tb_acc
   username char[64] PRIMARY KEY,\
   password char[64],\
   socket integer default -1,\
+  create_at datetime default datetime('now','localtime'),\
+  update_at datetime default datetime('now','localtime')\
 )";
 
 #define SIGN_IN 1
