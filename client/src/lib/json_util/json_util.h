@@ -5,14 +5,20 @@
 #include <stdio.h>
 #include <string.h>
 
-struct msg
-{
-	int code;
-	char cmd[256];
-	char data[1024];
+//
+struct msg {
+	unsigned char code;
+	char data[1023];
 };
 
-extern struct msg parse_msg(char* json_str);
-extern const char* pack_msg(struct msg pack);
+extern struct msg parse_msg(const char* json_str);
+extern void pack_msg(struct msg smsg, char* json_str);
 
+struct sign_data {
+	char username[64];
+	char password[64];
+};
+
+extern struct sign_data parse_signdata(const char* json_str);
+extern void pack_signdata(struct sign_data ssign_data, char* json_str);
 #endif

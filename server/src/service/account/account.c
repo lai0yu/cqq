@@ -2,7 +2,7 @@
 
 int init_account_service() { return exec_sql(sql_create_account_table, NULL, NULL); }
 
-static int send_msg(int socket, int code, char* data) {
+static int send_msg(int socket, char code, char* data) {
 	struct msg smsg;
 	memset(&smsg, 0, sizeof(struct msg));
 	smsg.code = code;

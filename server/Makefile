@@ -16,7 +16,7 @@ COBJS				:= $(patsubst %, obj/%, $(CFILENDIR:.c=.o))
 OBJS				:= $(COBJS)
 
 $(TARGET) : $(OBJS)
-	$(CC) $(COBJS) -o $@ -lpthreagd -ljson -lsqlite3 -g
+	$(CC) $(COBJS) -o $@ -lpthread -ljson -lsqlite3 -g
 	
 $(OBJS) : obj/%.o : %.c
 	$(CC) -c $< -o $@ -g

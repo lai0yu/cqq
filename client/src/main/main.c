@@ -9,6 +9,23 @@
 
 #include "../lib/json_util/json_util.h"
 
+#define SIGN_IN 1
+#define SIGN_IN_SUCCESS 2
+#define SIGN_IN_NO_USER 3
+#define SIGN_IN_PW_ERROR 4
+
+#define SIGN_OUT 11
+#define SIGN_OUT_SUCCESS 12
+
+#define SIGN_UP 21
+#define SIGN_UP_SUCCESS 22
+#define SIGN_UP_DUP_USER 23
+
+#define SIGN_DEL 31
+#define SIGN_DEL_SUCCESS 32
+#define SIGN_DEL_NO_USER 33
+#define SIGN_DEL_PW_ERROR 34
+
 static int serv_sock;
 
 static char gusername[64];
@@ -23,98 +40,44 @@ void main_ui();
 void fun_login();
 void fun_main();
 
-int sign_in()
-{
-	printf("请输入用户名和密码，以空格符分割\n");
-	char username[64] = {0};
-	char password[64] = {0};
+static int send_msg(int socket, char code, char* data) {
+	struct msg smsg;
+	memset(&smsg, 0, sizeof(struct msg));
+	smsg.code = code;
+	strcpy(smsg.data, data);
 
-	scanf("%s%s", username, password);
-
-	struct json_object* object = json_object_new_object();
-
-	struct json_object* obj_username = json_object_new_string(username);
-	struct json_object* obj_password = json_object_new_string(password);
-
-	json_object_object_add(object, "username", obj_username);
-	json_object_object_add(object, "password", obj_password);
-
-	const char* sin_in_data_string = json_object_to_json_string(object);
-
-	struct msg cmsg;
-	memset(&cmsg, 0, sizeof(cmsg));
-	cmsg.code = 0;
-	strcpy(cmsg.cmd, "sign_in");
-	strcpy(cmsg.data, sin_in_data_string);
-
-	const char* msg_str = pack_msg(cmsg);
-
-	send(serv_sock, msg_str, sizeof(cmsg), 0);
-
-	char recv_buf[1284];
-	bzero(recv_buf, sizeof(recv_buf));
-	recv(serv_sock, recv_buf, sizeof(recv_buf), 0);
-
-	struct msg smsg = parse_msg(recv_buf);
-
-	if(smsg.code == 0)
-	{
-		strcpy(gusername, username);
-		strcpy(gpassword, password);
-	}
-	printf("%s\n", smsg.data);
-
-	return smsg.code;
+	char msg_buf[1024] = { 0 };
+	pack_msg(smsg, msg_buf);
+	return send(socket, msg_buf, strlen(msg_buf) + 1, 0);
+	
 }
 
-int sign_up()
+int sign(char code)
 {
-	printf("请输入用户名和密码，以空格符分割\n");
-	char username[64] = {0};
-	char password[64] = {0};
+	struct sign_data sd;
+	memset(&sd,0,sizeof(struct sign_data));
+	
+	printf("请输入用户名:\n");
+	scanf("%s" ,sd.username);
 
-	scanf("%s%s", username, password);
+	printf("请输入密码:\n");
+	scanf("%s" ,sd.password);
 
-	struct json_object* object = json_object_new_object();
-
-	struct json_object* obj_username = json_object_new_string(username);
-	struct json_object* obj_password = json_object_new_string(password);
-
-	json_object_object_add(object, "username", obj_username);
-	json_object_object_add(object, "password", obj_password);
-
-	const char* sin_in_data_string = json_object_to_json_string(object);
-
-	struct msg cmsg;
-	memset(&cmsg, 0, sizeof(cmsg));
-	cmsg.code = 0;
-	strcpy(cmsg.cmd, "sign_up");
-	strcpy(cmsg.data, sin_in_data_string);
-
-	const char* msg_str = pack_msg(cmsg);
-
-	send(serv_sock, msg_str, sizeof(cmsg), 0);
-
-	char recv_buf[1284];
-	bzero(recv_buf, sizeof(recv_buf));
-	recv(serv_sock, recv_buf, sizeof(recv_buf), 0);
-
-	struct msg smsg = parse_msg(recv_buf);
-
-	printf("%s\n", smsg.data);
-
-	return smsg.code;
+	char psd[1023];
+	pack_signdata(sd,psd);
+	return send_msg(serv_sock, code, psd);
 }
+
 
 void login_ui()
 {
 	printf("***************登录界面*****************\n");
 	printf("*                                     *\n");
-	printf("*              A:登录                  *\n");
+	printf("*              1:登录                  *\n");
 	printf("*                                     *\n");
-	printf("*              B:注册                  *\n");
+	printf("*              2:注册                  *\n");
 	printf("*                                     *\n");
-	printf("*              X:退出                  *\n");
+	printf("*              3:退出                  *\n");
 	printf("*                                     *\n");
 	printf("***************************************\n");
 }
@@ -124,56 +87,31 @@ void main_ui()
 
 	printf("***************功能界面*****************\n");
 	printf("*                                     *\n");
-	printf("*              A:好友列表              *\n");
+	printf("*              1:好友列表              *\n");
 	printf("*                                     *\n");
-	printf("*              B:群列表                *\n");
+	printf("*              2:群列表                *\n");
 	printf("*                                     *\n");
-	printf("*              X:退出                  *\n");
+	printf("*              3:退出                  *\n");
 	printf("*                                     *\n");
 	printf("***************************************\n");
 }
 
 void fun_login()
 {
-	login_ui();
-	char c;
-	scanf("%c", &c);
-	getchar();
-	while(c != 'A' && c != 'B' && c != 'X')
-	{
-		printf("请输入功能选项字母\n");
-		scanf("%c", &c);
+	unsigned char c;
+	scanf("%hhd",&c);
+
+	while(c <1 || c>3){
+		scanf("%hhd",&c);
 	}
 
-	if(c == 'A')
+	switch (c)
 	{
-		int sign_in_ret = sign_in();
-		if(sign_in_ret == 0)
-		{
-			fun_main();
-		}
-	}
-	else if(c == 'B')
-	{
-		int sign_up_ret = sign_up();
-		if(sign_up_ret == 0)
-		{
-			printf(" 按#返回登录界面：\n");
-
-			char c;
-			scanf("%c", &c);
-
-			while(c != '#')
-			{
-				scanf("%c", &c);
-			}
-
-			fun_login();
-		}
-	}
-	else if(c == 'X')
-	{
-		exit(0);
+		case 1:sign(SIGN_IN);break;
+		case 2:sign(SIGN_UP);break;
+		case 3:exit(-1);break;
+		default:
+			break;
 	}
 }
 

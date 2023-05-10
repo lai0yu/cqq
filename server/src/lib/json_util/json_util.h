@@ -7,7 +7,7 @@
 
 //
 struct msg {
-	signed char code;
+	unsigned char code;
 	char data[1023];
 };
 
