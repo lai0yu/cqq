@@ -23,6 +23,7 @@ void handle_client(int csocket,int code, const char* data) {
 	case SIGN_DEL:sign_del(data,csocket);break;
 	case SIGN_IN:sign_in(data,csocket);break;
 	case SIGN_OUT:sign_out(data,csocket);break;
+	case PULL_FRIENDS:list_friends(data,csocket);break;
 	default:
 		break;
 	}
@@ -52,6 +53,7 @@ int main(int argc, char* argv[]) {
 
 	db_open();
 	init_account_service();
+	init_single_chat_service();
 
 	int client_socks[MAX_CONNECT] = { -1 };
 	struct sockaddr_in* client_addrs[MAX_CONNECT] = { NULL };

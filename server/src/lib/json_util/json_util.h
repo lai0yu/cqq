@@ -21,4 +21,9 @@ struct sign_data {
 
 extern struct sign_data parse_signdata(const char* json_str);
 extern void pack_signdata(struct sign_data ssign_data, char* json_str);
+
+struct add_friend_data {
+	char username[64];
+	char friendname[64];
+};
 #endif

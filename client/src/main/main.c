@@ -70,7 +70,7 @@ int sign(char code)
 
 void* recv_work(void* arg)
 {
-	char buf[512];
+	char buf[1024];
 	int recv_ret = -1;
 	while(1)
 	{
