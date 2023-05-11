@@ -12,6 +12,7 @@
 
 #include "../service/account/account.h"
 #include "../service/friend/friend.h"
+#include "../service/friend_chat/friend_chat.h"
 
 // 最大连接数
 #define MAX_CONNECT 1000
@@ -56,6 +57,7 @@ int main(int argc, char *argv[]) {
     db_open();
     init_account_service();
     init_friend_service();
+    init_friend_chat_service();
 
     int client_socks[MAX_CONNECT] = {-1};
     struct sockaddr_in *client_addrs[MAX_CONNECT] = {NULL};

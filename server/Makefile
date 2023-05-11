@@ -5,6 +5,7 @@ INCDIRS 			:= 	src/lib/json_util \
 						src/lib/sqlite_util \
 						src/service/account \
 						src/service/friend \
+						src/service/friend_chat\
 						src/main
 					
 VPATH           	:=$(INCDIRS)
@@ -16,7 +17,7 @@ COBJS				:= $(patsubst %, obj/%, $(CFILENDIR:.c=.o))
 OBJS				:= $(COBJS)
 
 $(TARGET) : $(OBJS)
-	$(CC) $(COBJS) -o $@ -lpthread -ljson -lsqlite3 -g
+	$(CC) $(COBJS) -o $@ -lpthread -ljson -lsqlite3 -luuid -g
 	
 $(OBJS) : obj/%.o : %.c
 	$(CC) -c $< -o $@ -g
