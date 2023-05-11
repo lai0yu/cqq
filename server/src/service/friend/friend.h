@@ -11,12 +11,13 @@
 #define LISTING_FRIEND_FINISHED 45       // 好友列表发送完成
 
 #define ADD_FRIEND 51                    // 请求添加好友
-#define ADD_FRIEND_NO_USER 52            // 请求添加好友无此用户
-#define ADD_FRIEND_PENDING 53            // 请求添加好友等待同意
-#define ADD_FRIEND_ADMIT 54              // 同意添加好友
-#define ADD_FRIEND_REFUSE 55             // 拒绝添加好友
-#define ADD_FRIEND_DUP 56                // 已经是好友
-#define ADD_FRIEND_BLACK 57              // 已经拉黑对方和被对方拉黑
+#define ADD_FRIEND_REQUEST 52
+#define ADD_FRIEND_NO_USER 53            // 请求添加好友无此用户
+#define ADD_FRIEND_PENDING 54            // 请求添加好友等待同意
+#define ADD_FRIEND_ADMIT 55              // 同意添加好友
+#define ADD_FRIEND_REFUSE 56             // 拒绝添加好友
+#define ADD_FRIEND_DUP 57                // 已经是好友
+#define ADD_FRIEND_BLACK 58              // 已经拉黑对方和被对方拉黑
 
 #define DEL_FRIEND 55123                 // 删除好友
 #define DEL_FRIEND_SUCCESS 56123         // 删除好友成功
