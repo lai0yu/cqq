@@ -2,7 +2,6 @@ CC 				    := gcc
 TARGET		  		?= cqqclient
 
 INCDIRS 			:= 	src/lib/json_util \
-						src/lib/sqlite_util \
 						src/main
 					
 VPATH           	:=$(INCDIRS)
