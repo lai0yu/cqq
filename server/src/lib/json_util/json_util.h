@@ -31,12 +31,12 @@ extern struct add_friend_data parse_afdata(const char *json_str);
 extern void pack_afdata(struct add_friend_data ssign_data, char *json_str);
 
 struct fmsg_data {
-    char uuid[64];
+    char uuid[16];
     char send_name[64];
     char recv_name[64];
     unsigned int send_at;
     unsigned int recv_at;
-    char msg[1023 - 64 - 64 - 64 - 64];
+    char msg[1023 - 16 - 64 - 64 - 32 - 32];
 };
 
 extern struct fmsg_data parse_fmdata(const char *json_str);
@@ -45,6 +45,7 @@ extern void pack_fmdata(struct fmsg_data fmdata, char *json_str);
 struct friend_data {
     char friendname[64];
     char is_online;
+    int unrecv_msg_count;
 };
 
 extern struct friend_data parse_fdata(const char *json_str);
