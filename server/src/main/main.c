@@ -22,6 +22,10 @@ void handle_client(int csocket, int code, const char *data) {
     case SIGN_DEL: sign_del(data, csocket); break;
     case SIGN_IN: sign_in(data, csocket); break;
     case SIGN_OUT: sign_out(data, csocket); break;
+    case PULL_FRIENDS_LIST: list_friends(data, csocket); break;
+    case ADD_FRIEND: add_friend(data, csocket); break;
+    case ADD_FRIEND_ADMIT: add_friend_admit(data, csocket); break;
+    case ADD_FRIEND_REFUSE: add_friend_refuse(data, csocket); break;
     default:
         break;
     }
@@ -51,7 +55,7 @@ int main(int argc, char *argv[]) {
 
     db_open();
     init_account_service();
-    // init_single_chat_service();
+    init_friend_service();
 
     int client_socks[MAX_CONNECT] = {-1};
     struct sockaddr_in *client_addrs[MAX_CONNECT] = {NULL};
