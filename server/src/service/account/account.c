@@ -10,7 +10,7 @@ static int send_msg(int socket, char code, char *data) {
     smsg.code = code;
     strcpy(smsg.data, data);
 
-    char msg_buf[1024] = {0};
+    char msg_buf[2048] = {0};
     pack_msg(smsg, msg_buf);
     return send(socket, msg_buf, strlen(msg_buf) + 1, 0);
 }

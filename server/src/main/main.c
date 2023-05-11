@@ -22,7 +22,6 @@ void handle_client(int csocket, int code, const char *data) {
     case SIGN_DEL: sign_del(data, csocket); break;
     case SIGN_IN: sign_in(data, csocket); break;
     case SIGN_OUT: sign_out(data, csocket); break;
-    case PULL_FRIENDS: list_friends(data, csocket); break;
     default:
         break;
     }
@@ -67,7 +66,7 @@ int main(int argc, char *argv[]) {
     unsigned int nc_size;
     struct sockaddr_in *nclient_addr = NULL;
 
-    char recv_buf[1284];
+    char recv_buf[2048];
     while (1) {
         FD_ZERO(&fdset);
         FD_SET(serv_sock, &fdset);
