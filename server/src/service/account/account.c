@@ -12,6 +12,7 @@ static int send_msg(int socket, char code, char *data) {
 
     char msg_buf[2048] = {0};
     pack_msg(smsg, msg_buf);
+    printf("%s\n", msg_buf);
     return send(socket, msg_buf, strlen(msg_buf) + 1, 0);
 }
 
