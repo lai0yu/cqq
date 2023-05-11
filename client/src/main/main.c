@@ -8,6 +8,12 @@
 #include <unistd.h>
 
 #include "../lib/json_util/json_util.h"
+#include "../../../server/src/lib/json_util/json_util.h"
+#include "../../../server/src/lib/sqlite_util/sqlite_util.h"
+#include "../../../server/src/service/friend/friend.h"
+#include "../../../server/src/service/account/account.h"
+#include "../../../server/src/service/friend_chat/friend_chat.h"
+#include "../../../server/src/service/heart_beat/heart_beat.h"
 
 #define SIGN_IN 1
 #define SIGN_IN_SUCCESS 2
@@ -189,10 +195,10 @@ void fun_main()
 			send_msg(serv_sock,ADD_FRIEND,"请求添加好友");
 			break;
 		case 4 :
-			send_msg(serv_sock,DEL_FRIEND,"请求删除好友");
+			//send_msg(serv_sock,DEL_FRIEND,"请求删除好友");
 			break;
 		case 5 :
-			send_msg(serv_sock,BLACK_USER,"请求拉黑好友");
+			//send_msg(serv_sock,BLACK_USER,"请求拉黑好友");
 			break;
 		case 6 :
 			//send_msg(serv_sock,XXXX,"请求创建群聊");
@@ -211,24 +217,23 @@ void friend_main(){
 	friend_ui(data,on,count);
 	int c;
 	printf("请输入:\n");
-	scanf("%hhd",&c);
+	scanf("%d",&c);
 	if(c < 1 || c > count){
 		printf("输入有误,请重新输入\n");
-		scanf("%hhd",&c);
+		scanf("%d",&c);
 	}
 	char *friendname[64];
 	char *online[30];
 	if(c == 113){
 		fun_main();
 	}else{
-		bzero(friendname,sizeof(char * 64));
-		bzero(online,sizeof(char * 30));
+		bzero(friendname,sizeof(char *)*64);
+		bzero(online,sizeof(char *)*30);
 		strcpy(friendname,data[c]);
 		strcmp(on[c],"在线");
 		strcpy(online,on[c]);
 		message_ui(friendname,online);
 		}
-	}
 }
 
 //子线程只接收聊天业务
@@ -377,7 +382,7 @@ int main(int argc, char* argv[])
 					{
 						int i;
 						struct friend_data fdata;
-						bzero(fdata,sizeof(fdata));
+						bzero(&fdata,sizeof(fdata));
 						fdata = parse_fdata(cmsg.data);
 						for(i=0;i<100;i++){
 							data[i] = fdata.friendname;
