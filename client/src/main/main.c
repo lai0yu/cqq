@@ -49,14 +49,14 @@ static int send_msg(int socket, char code, char* data) {
 	char msg_buf[1024] = { 0 };
 	pack_msg(smsg, msg_buf);
 	return send(socket, msg_buf, strlen(msg_buf) + 1, 0);
-	
+
 }
 
 int sign(char code)
 {
 	struct sign_data sd;
 	memset(&sd,0,sizeof(struct sign_data));
-	
+
 	printf("请输入用户名:\n");
 	scanf("%s" ,sd.username);
 
@@ -70,15 +70,24 @@ int sign(char code)
 
 void* recv_work(void* arg)
 {
-	char buf[1024];
+	int fd = *(int *)arg;
+	char buf[512];
 	int recv_ret = -1;
+	struct msg cmsg;
 	while(1)
 	{
 		bzero(buf, sizeof(buf));
-		int recv_ret = recv(*(int*)(arg), buf, sizeof(buf), 0);
+		int recv_ret = recv(fd, buf, sizeof(buf), 0);
+		if(recv_ret == 0){
+			close(fd);
+			pthread_exit(NULL);
+		}
 		if(recv_ret > 0)
 		{
-			printf("%s\n", buf);
+			cmsg = parse_msg(buf);
+			switch(cmsg.code){
+
+			}
 		}
 	}
 }
@@ -110,23 +119,25 @@ void main_ui()
 	printf("***************************************\n");
 }
 
-void fun_login()
+void fun_login(void)
 {
 	login_ui();
 	unsigned char c;
+	printf("请输入:\n");
 	scanf("%hhd",&c);
-
-	while(c <1 || c>3){
+	if(c < 1 || c > 3){
+		printf("输入有误,请重新输入\n");
 		scanf("%hhd",&c);
 	}
-
-	switch (c)
-	{
-		case 1:sign(SIGN_IN);break;
-		case 2:sign(SIGN_UP);break;
-		case 3:exit(-1);break;
-		default:
+	switch(c){
+		case 1 :
+			sign(SIGN_IN);
 			break;
+		case 2 :
+			sign(SIGN_UP);
+			break;
+		case 3 :
+			exit(-1);
 	}
 }
 
@@ -154,6 +165,7 @@ int main(int argc, char* argv[])
 	serv_sock_addr.sin_family = AF_INET;
 	serv_sock_addr.sin_addr.s_addr = inet_addr(serv_ip);
 	serv_sock_addr.sin_port = htons(atoi(serv_port));
+
 	int connect_ret = connect(serv_sock, (struct sockaddr*)&serv_sock_addr, sizeof(serv_sock_addr));
 	if(connect_ret < 0)
 	{
@@ -161,8 +173,94 @@ int main(int argc, char* argv[])
 		return -1;
 	}
 
-	fun_login();
+	//子线程只接收聊天内容
+	pthread_t tid;
+	pthread_create(&tid,NULL,recv_work,(void *)&serv_sock);
+	pthread_detach(tid);
 
+	//主线程同时接收及发送
+	char buf[512];
+	int ret = -1;	
+	struct msg cmsg;
+	//登录界面及操作
+	fun_login();
+	//接收服务器返回
+	while(1){
+		ret = recv(serv_sock,buf,sizeof(buf),0);
+		if(ret > 0){
+			cmsg = parse_msg(buf);
+			switch(cmsg.code){
+				//注册成功
+				case SIGN_UP_SUCCESS :
+					{
+						printf("%s\n",cmsg.data);
+						fun_login();
+						break;
+					}
+				//注册用户名已存在
+				case SIGN_UP_DUP_USER :
+					{
+						printf("%s\n",cmsg.data);	
+						printf("请重新注册\n");
+						fun_login();
+						break;
+					}
+				//登录成功
+				case SIGN_IN_SUCCESS :
+					{
+						printf("%s\n",cmsg.data);
+						main_ui();
+						break;
+					}
+				//登录密码错误
+				case SIGN_IN_PW_ERROR :
+					{
+						printf("%s\n",cmsg.data);
+						printf("请重新登录\n");
+						fun_login();
+						break;
+					}
+				//登录用户名不存在
+				case SIGN_IN_NO_USER :
+					{
+						printf("%s\n",cmsg.data);
+						printf("请重新登录\n");
+						fun_login();
+						break;
+					}
+				//退出登录成功
+				case SIGN_OUT_SUCCESS :
+					{
+						printf("%s\n",cmsg.data);	
+						fun_login();
+						break;
+					}
+				//注销用户成功
+				case SIGN_DEL_SUCCESS :
+					{
+						printf("%s\n",cmsg.data);	
+						fun_login();
+						break;
+					}
+				//注销用户不存在
+				case SIGN_DEL_NO_USER :
+					{
+						printf("%s\n",cmsg.data);	
+						main_ui();
+						break;
+					}
+				//注销用户密码错误
+				case SIGN_DEL_PW_ERROR :
+					{
+						printf("%s\n",cmsg.data);	
+						main_ui();
+						break;
+					}
+				default :
+					break;
+			}
+		}
+	}
 	close(serv_sock);
 	return 0;
 }
