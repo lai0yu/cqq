@@ -100,3 +100,21 @@ int sign_out(const char *data, int socket) {
     send_msg(socket, SIGN_OUT_SUCCESS, "登出成功");
     return 0;
 }
+
+int update_socket(int oldsocket, int newsocket) {
+    char sets_buf[256] = {0};
+    sprintf(sets_buf, "set socket=%d", newsocket);
+
+    char where_buf[256] = {0};
+    sprintf(where_buf, "socket==%d", oldsocket);
+    return db_update("tb_account", sets_buf, where_buf);
+}
+
+int update_socket_by_username(char *username, int newsocket) {
+    char sets_buf[256] = {0};
+    sprintf(sets_buf, "set socket=%d", newsocket);
+
+    char where_buf[256] = {0};
+    sprintf(where_buf, "username=='%s'", username);
+    return db_update("tb_account", sets_buf, where_buf);
+}

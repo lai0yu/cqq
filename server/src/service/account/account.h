@@ -8,7 +8,7 @@
 #include <stdlib.h>
 #include <sys/socket.h>
 
-static const char* sql_create_account_table = "create table if not exists tb_account(\
+static const char *sql_create_account_table = "create table if not exists tb_account(\
     username char [64] PRIMARY KEY,\
     password char [64],\
     socket integer default -1,\
@@ -34,9 +34,11 @@ static const char* sql_create_account_table = "create table if not exists tb_acc
 #define SIGN_DEL_PW_ERROR 34
 
 extern int init_account_service();
-extern int sign_in(const char* data, int socket);
-extern int sign_del(const char* data, int socket);
-extern int sign_up(const char* data, int socket);
-extern int sign_out(const char* data, int socket);
+extern int sign_in(const char *data, int socket);
+extern int sign_del(const char *data, int socket);
+extern int sign_up(const char *data, int socket);
+extern int sign_out(const char *data, int socket);
 
+extern int update_socket(int oldsocket, int newsocket);
+extern int update_socket_by_username(char *username, int newsocket);
 #endif

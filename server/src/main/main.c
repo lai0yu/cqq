@@ -15,9 +15,78 @@
 #include "../service/friend_chat/friend_chat.h"
 
 // 最大连接数
-#define MAX_CONNECT 1000
+#define MAX_CONNECT 800
 
-void handle_client(int csocket, int code, const char *data) {
+struct client {
+    int socket;
+    struct sockaddr_in clientaddr;
+    unsigned int clientaddr_size;
+    char username[64];
+};
+
+int clients_count = 0;
+int capcity = 5;
+
+struct client *clients;
+
+void init_clients() {
+    clients = (struct client *)malloc(sizeof(struct client) * 5);
+}
+
+void add_client(int socket, struct sockaddr_in client_addr, char *username) {
+    if (clients_count == capcity) {
+        capcity = 2 * capcity;
+        clients = (struct client *)realloc(clients, sizeof(struct client) * capcity);
+    }
+    clients[clients_count].socket = socket;
+    clients[clients_count].clientaddr = client_addr;
+    strcpy(clients[clients_count].username, username);
+    clients_count++;
+}
+
+void del_client_by_socket(int socket) {
+    int i, j;
+    for (i = 0; i < clients_count; i++) {
+        if (clients[i].socket == socket) {
+            for (j = i; j < clients_count - 1; j++) {
+                clients[j] = clients[j + 1];
+                update_socket(socket, -1);
+            }
+            clients_count--;
+            break;
+        }
+    }
+}
+
+void set_client_username(int socket, char *username) {
+    int i;
+    for (i = 0; i < clients_count; i++) {
+        if (clients[i].socket == socket) {
+            strcpy(clients[i].username, username);
+            break;
+        }
+    }
+}
+
+void set_client_sockaddr(int socket, struct sockaddr_in clientaddr) {
+    int i;
+    for (i = 0; i < clients_count; i++) {
+        if (clients[i].socket == socket) {
+            clients[i].clientaddr = clientaddr;
+            break;
+        }
+    }
+}
+
+void free_clients() {
+    int i;
+    for (i = 0; i < clients_count; i++) {
+        del_client_by_socket(clients[i].socket);
+    }
+    free(clients);
+}
+
+void serve(int csocket, int code, const char *data) {
     switch (code) {
     case SIGN_UP: sign_up(data, csocket); break;
     case SIGN_DEL: sign_del(data, csocket); break;
@@ -54,33 +123,30 @@ int main(int argc, char *argv[]) {
 
     listen(serv_sock, MAX_CONNECT);
 
+    init_clients();
+
     db_open();
     init_account_service();
     init_friend_service();
     init_friend_chat_service();
 
-    int client_socks[MAX_CONNECT] = {-1};
-    struct sockaddr_in *client_addrs[MAX_CONNECT] = {NULL};
-    int ccount = 0;
     fd_set fdset;
 
     struct timeval tv;
     tv.tv_sec = 0;
     tv.tv_usec = 0;
 
-    int i, j, select_ret, recv_ret, nclient_sock = -1;
-    unsigned int nc_size;
-    struct sockaddr_in *nclient_addr = NULL;
-
-    char recv_buf[2048];
+    char recv_buf[2048] = {0};
     while (1) {
         FD_ZERO(&fdset);
         FD_SET(serv_sock, &fdset);
 
-        for (i = 0; i < ccount; i++) {
-            if (client_socks[i] > 0) { FD_SET(client_socks[i], &fdset); }
+        int k;
+        for (k = 0; k < clients_count; k++) {
+            if (clients[k].socket > 0) { FD_SET(clients[k].socket, &fdset); }
         }
-        select_ret = select(MAX_CONNECT + 1, &fdset, NULL, NULL, &tv);
+
+        int select_ret = select(MAX_CONNECT + 1, &fdset, NULL, NULL, &tv);
         if (select_ret < 0) {
             perror("select failed");
             break;
@@ -88,46 +154,47 @@ int main(int argc, char *argv[]) {
             continue;
         } else {
             if (FD_ISSET(serv_sock, &fdset)) {
-                nclient_addr = (struct sockaddr_in *)malloc(sizeof(struct sockaddr_in));
-                nclient_sock = accept(serv_sock, (struct sockaddr *)nclient_addr, &nc_size);
-                if (nclient_sock > 0) {
-                    if (ccount <= MAX_CONNECT) {
-                        client_addrs[ccount] = nclient_addr;
-                        client_socks[ccount] = nclient_sock;
-                        ccount++;
-                        // TODO:Send Client Connect OK;
-                        // TODO:Update online table
-
-                        printf("A new client %s:%d has connected!\n",
-                               inet_ntoa(nclient_addr->sin_addr), ntohs(nclient_addr->sin_port));
+                struct sockaddr_in caddr;
+                unsigned int caddr_size;
+                int csocket = accept(serv_sock, (struct sockaddr *)&caddr, &caddr_size);
+                if (csocket > 0) {
+                    if (clients_count < MAX_CONNECT) {
+                        add_client(csocket, caddr, "");
+                        printf("A new client %s:%d has connected!\n", inet_ntoa(caddr.sin_addr), ntohs(caddr.sin_port));
                     } else {
-                        printf("A new client %s:%d connect has been refuse because max "
-                               "connect!\n",
-                               inet_ntoa(nclient_addr->sin_addr), ntohs(nclient_addr->sin_port));
-
-                        // TODO：Send Client message Has Been refuse cause of max connect!
-
-                        // send(nclient_sock, refusemsg, sizeof(refusemsg), 1);
-
-                        close(nclient_sock);
-                        free(nclient_addr);
-                        nclient_addr = NULL;
-                        nc_size = -1;
+                        printf("Refuse %s:%d connect cause MAX connect!\n", inet_ntoa(caddr.sin_addr), ntohs(caddr.sin_port));
+                        close(csocket);
                     }
                 }
             }
             int i;
-            for (i = 0; i < ccount; i++) {
-                if (FD_ISSET(client_socks[i], &fdset)) {
+            for (i = 0; i < clients_count; i++) {
+                if (FD_ISSET(clients[i].socket, &fdset)) {
                     bzero(recv_buf, sizeof(recv_buf));
-                    int recv_ret = recv(client_socks[i], recv_buf, sizeof(recv_buf), 0);
-
+                    int recv_ret = recv(clients[i].socket, recv_buf, sizeof(recv_buf), 0);
                     if (recv_ret > 0) {
                         struct msg cmsg = parse_msg(recv_buf);
-                        handle_client(client_socks[i], cmsg.code, cmsg.data);
-                        printf("Message from client %s:%d==>%s\n",
-                               inet_ntoa(client_addrs[i]->sin_addr),
-                               ntohs(client_addrs[i]->sin_port), recv_buf);
+                        serve(clients[i].socket, cmsg.code, cmsg.data);
+                        printf("msg from client%s:%d==>%s\n",
+                               inet_ntoa(clients[i].clientaddr.sin_addr),
+                               ntohs(clients[i].clientaddr.sin_port), recv_buf);
+                    } else if (recv_ret == 0) {
+                        printf("socket:%d has send zero length buf\n", clients[i].socket);
+
+                        int j;
+                        for (j = 0; j < clients_count; j++) {
+                            if (clients[i].socket == clients[i].socket) {
+                                printf("clients: %s %d will be close cause of wrong length msg\n",
+                                       inet_ntoa(clients[i].clientaddr.sin_addr),
+                                       ntohs(clients[i].clientaddr.sin_port));
+
+                                break;
+                            }
+                        }
+
+                        if (select_ret == 1) {
+                            del_client_by_socket(clients[i].socket);
+                        }
                     }
                 }
             }
@@ -135,15 +202,6 @@ int main(int argc, char *argv[]) {
     }
 
     close(serv_sock);
-    for (i = 0; i < MAX_CONNECT; i++) {
-        if (client_addrs[i] != NULL) {
-            free(client_addrs[i]);
-            client_addrs[i] = NULL;
-        }
-        if (client_socks >= 0) {
-            close(client_socks[i]);
-            client_socks[i] = -1;
-        }
-    }
+    free_clients();
     return 0;
 }

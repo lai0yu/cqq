@@ -36,7 +36,6 @@
 */
 
 static const char *sql_create_friend_table = "create table if not exists tb_friend(\
-  uuid char[64] primary key,\
   username char[64],\
   friendname char[64],\
   relation integer default 0,\
