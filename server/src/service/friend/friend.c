@@ -82,29 +82,32 @@ int add_friend(const char *data, int socket) {
     int f2ucount =
         list_entry(f2urow_head->list.prev, struct select_row, list)->index;
 
+    struct select_row *row_head = u2fcount > 0 ? u2ffrow_head : f2urow_head;
+    int is_reverse = u2fcount > 0 ? 0 : 1;
+    int relation = atoi(list_entry(row_head->list.next, struct select_row, list)->argv[2]);
+    char *oppsite_name = is_reverse ? afdata.friendname : afdata.username;
+
+    char where_buf[256] = {0};
+    bzero(where_buf, sizeof(where_buf));
+    sprintf(where_buf, "username=='%s'", oppsite_name);
+    struct select_row *sock_head = db_select("tb_account", "socket", where_buf);
+
+    int sock_count = list_entry(sock_head->list.prev, struct select_row, list)->index;
+    if (sock_count < 1) {
+        send_msg(socket, ADD_FRIEND_NO_USER, "无此用户");
+        return -1;
+    }
+
+    int oppsite_socket = atoi(list_entry(sock_head->list.prev, struct select_row, list)->argv[0]);
+
     if (f2ucount == 0 && u2fcount == 0) {
         char values_buf[256] = {0};
         sprintf(values_buf, "'%s','%s',1", afdata.username, afdata.friendname);
         db_insert("tb_friend(username,friendname,relation)", values_buf);
-    } else {
-        struct select_row *row_head = u2fcount > 0 ? u2ffrow_head : f2urow_head;
-        int is_reverse = u2fcount > 0 ? 0 : 1;
-        int relation = atoi(list_entry(row_head->list.next, struct select_row, list)->argv[2]);
-
-        char *oppsite_name = is_reverse ? afdata.friendname : afdata.username;
-
-        char where_buf[256] = {0};
-        bzero(where_buf, sizeof(where_buf));
-        sprintf(where_buf, "username=='%s'", oppsite_name);
-
-        struct select_row *sock_head = db_select("tb_account", "socket", where_buf);
-        int sock_count = list_entry(sock_head->list.prev, struct select_row, list)->index;
-        if (sock_count < 1) {
-            send_msg(socket, ADD_FRIEND_NO_USER, "无此用户");
-            return -1;
+        if (oppsite_socket > 0) {
+            send_msg(oppsite_socket, ADD_FRIEND_REQUEST, data);
         }
-
-        int oppsite_socket = atoi(list_entry(sock_head->list.prev, struct select_row, list)->argv[0]);
+    } else {
         char *relation_set;
         switch (relation) {
         case 0:
@@ -169,6 +172,7 @@ int add_friend(const char *data, int socket) {
             break;
         }
     }
+
     return 0;
 }
 
@@ -287,4 +291,7 @@ int add_friend_refuse(const char *data, int socket) {
     }
 
     return 0;
+}
+
+int del_friend(const char *data, int socket) {
 }
