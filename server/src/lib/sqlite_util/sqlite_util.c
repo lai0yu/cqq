@@ -12,7 +12,7 @@ int db_delete(const char* table, const char* where) {
 	return exec_sql(fsql, NULL, NULL);
 }
 
-struct select_row* db_select(const char* table, const char* columns, const char* where) {
+struct select_row* db_select(const char* table, const char* columns,  const char* where) {
 	struct select_row* row_head = (struct select_row*)malloc(sizeof(struct select_row)) ;
 	INIT_LIST_HEAD(&row_head->list);
 	row_head->index = 0;

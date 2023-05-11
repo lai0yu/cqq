@@ -26,4 +26,7 @@ struct add_friend_data {
 	char username[64];
 	char friendname[64];
 };
+
+extern struct add_friend_data parse_afdata(const char* json_str);
+extern void pack_afdata(struct add_friend_data ssign_data, char* json_str);
 #endif

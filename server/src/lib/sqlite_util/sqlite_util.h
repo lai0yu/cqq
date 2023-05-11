@@ -76,7 +76,7 @@ static int exec_sql(const char* sql_str,
 
 extern int db_insert(const char* table_columns, const char* values);
 extern int db_delete(const char* table, const char* where);
-extern struct select_row* db_select(const char* table, const char* columns, const char* where);
+extern struct select_row* db_select(const char* table, const char* columns,  const char* where);
 extern int db_update(const char* table, const char* sets, const char* where);
 extern void free_select_rows_list(struct select_row* row_head);
 #endif

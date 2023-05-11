@@ -57,3 +57,34 @@ void pack_signdata(struct sign_data ssign_data, char* json_str)
 
 	strcpy(json_str, json_object_to_json_string(object));
 }
+
+
+
+struct add_friend_data parse_afdata(const char* json_str)
+{
+	struct add_friend_data saddf_data;
+	memset(&saddf_data, 0, sizeof(saddf_data));
+
+	struct json_object* object = json_tokener_parse(json_str);
+
+	struct json_object* obj_username_str = json_object_object_get(object, "username");
+	struct json_object* obj_friendname_str = json_object_object_get(object, "friendname");
+
+	strcpy(saddf_data.username, json_object_get_string(obj_username_str));
+	strcpy(saddf_data.friendname, json_object_get_string(obj_friendname_str));
+
+	return saddf_data;
+}
+
+void pack_afdata(struct add_friend_data saddf_data, char* json_str)
+{
+	struct json_object* obj_username = json_object_new_string(saddf_data.username);
+	struct json_object* obj_friendname = json_object_new_string(saddf_data.friendname);
+
+	struct json_object* object = json_object_new_object();
+
+	json_object_object_add(object, "username", obj_username);
+	json_object_object_add(object, "friendname", obj_friendname);
+
+	strcpy(json_str, json_object_to_json_string(object));
+}
