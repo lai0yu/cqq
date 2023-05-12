@@ -7,8 +7,8 @@
 
 //
 struct msg {
-    char code;
-    char data[1023];
+    int code;
+    char data[1020];
 };
 
 extern struct msg parse_msg(const char *json_str);
