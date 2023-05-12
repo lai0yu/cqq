@@ -96,14 +96,14 @@ int sign_out(const char *data, int socket) {
     struct sign_data sd = parse_signdata(data);
     char where_buf[256] = {0};
     sprintf(where_buf, "username=='%s", sd.username);
-    db_update("tb_account", "set socket=-1", where_buf);
+    db_update("tb_account", "socket=-1", where_buf);
     send_msg(socket, SIGN_OUT_SUCCESS, "登出成功");
     return 0;
 }
 
 int update_socket(int oldsocket, int newsocket) {
     char sets_buf[256] = {0};
-    sprintf(sets_buf, "set socket=%d", newsocket);
+    sprintf(sets_buf, "socket=%d", newsocket);
 
     char where_buf[256] = {0};
     sprintf(where_buf, "socket==%d", oldsocket);
@@ -112,7 +112,7 @@ int update_socket(int oldsocket, int newsocket) {
 
 int update_socket_by_username(char *username, int newsocket) {
     char sets_buf[256] = {0};
-    sprintf(sets_buf, "set socket=%d", newsocket);
+    sprintf(sets_buf, "socket=%d", newsocket);
 
     char where_buf[256] = {0};
     sprintf(where_buf, "username=='%s'", username);

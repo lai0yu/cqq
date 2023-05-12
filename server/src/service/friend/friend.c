@@ -83,94 +83,107 @@ int add_friend(const char *data, int socket) {
     int f2ucount =
         list_entry(f2urow_head->list.prev, struct select_row, list)->index;
 
-    struct select_row *row_head = u2fcount > 0 ? u2ffrow_head : f2urow_head;
-    int is_reverse = u2fcount > 0 ? 0 : 1;
-    int relation = atoi(list_entry(row_head->list.next, struct select_row, list)->argv[2]);
-    char *oppsite_name = is_reverse ? afdata.friendname : afdata.username;
-
-    char where_buf[256] = {0};
-    bzero(where_buf, sizeof(where_buf));
-    sprintf(where_buf, "username=='%s'", oppsite_name);
-    struct select_row *sock_head = db_select("tb_account", "socket", where_buf);
-
-    int sock_count = list_entry(sock_head->list.prev, struct select_row, list)->index;
-    if (sock_count < 1) {
-        send_msg(socket, ADD_FRIEND_NO_USER, "无此用户");
-        return -1;
-    }
-
-    int oppsite_socket = atoi(list_entry(sock_head->list.prev, struct select_row, list)->argv[0]);
-
     if (f2ucount == 0 && u2fcount == 0) {
-        char values_buf[256] = {0};
-        sprintf(values_buf, "'%s','%s',1", afdata.username, afdata.friendname);
-        db_insert("tb_friend(username,friendname,relation)", values_buf);
-        if (oppsite_socket > 0) {
-            send_msg(oppsite_socket, ADD_FRIEND_REQUEST, data);
-        }
-    } else {
-        char *relation_set;
-        switch (relation) {
-        case 0:
-            if (oppsite_socket > 0) {
-                send_msg(oppsite_socket, ADD_FRIEND_REQUEST, data);
-            }
-            char values_buf0[256] = {0};
-            uuid_t uuid0;
-            uuid_generate(uuid0);
-            sprintf(
-                values_buf0,
-                "'%s','%s','%s',%d,'%s'",
-                uuid0, afdata.username, afdata.friendname, ADD_FRIEND_REQUEST, data);
-            db_insert("tb_fmsg(uuid,send_name,recv_name,code,data)", values_buf0);
-            relation_set = !is_reverse ? "relation=1" : "relation=3";
-            db_update("tb_friend", relation_set, !is_reverse ? where_buf1 : where_buf2);
-            break;
-        case 1:
-            if (oppsite_socket > 0) {
-                send_msg(oppsite_socket, ADD_FRIEND_REQUEST, data);
-            }
-            char values_buf1[256] = {0};
-            uuid_t uuid1;
-            uuid_generate(uuid1);
-            sprintf(
-                values_buf1,
-                "'%s','%s','%s',%d,'%s'",
-                uuid1, afdata.username, afdata.friendname, ADD_FRIEND_REQUEST, data);
-            db_insert("tb_fmsg(uuid,send_user,recv_user,code,data)", values_buf1);
-            relation_set = !is_reverse ? "relation=1" : "relation=3";
-            db_update("tb_friend", relation_set, !is_reverse ? where_buf1 : where_buf2);
-            break;
-        case 2:
-            send_msg(socket, ADD_FRIEND_DUP, data);
-            break;
-        case 3:
-            if (oppsite_socket > 0) {
-                send_msg(oppsite_socket, ADD_FRIEND_REQUEST, data);
-            }
-            char values_buf3[256] = {0};
-            uuid_t uuid3;
-            uuid_generate(uuid3);
-            sprintf(
-                values_buf3,
-                "'%s','%s','%s',%d,'%s'",
-                uuid3, afdata.username, afdata.friendname, ADD_FRIEND_REQUEST, data);
+        char where_buf[256] = {0};
+        bzero(where_buf, sizeof(where_buf));
+        sprintf(where_buf, "username=='%s'", afdata.friendname);
+        struct select_row *sock_head = db_select("tb_account", "socket", where_buf);
 
-            db_insert("tb_fmsg(uuid,send_name,recv_name,code,data)", values_buf3);
-            relation_set = !is_reverse ? "relation=1" : "relation=3";
-            db_update("tb_friend", relation_set, !is_reverse ? where_buf1 : where_buf2);
-            break;
-        case 4:
-            send_msg(socket, ADD_FRIEND_DUP, data);
-            break;
-        case 5:
-            send_msg(socket, ADD_FRIEND_BLACK, data);
-            break;
-        case 7:
-            send_msg(socket, ADD_FRIEND_BLACK, data);
-            break;
-        default:
-            break;
+        int sock_count = list_entry(sock_head->list.prev, struct select_row, list)->index;
+        if (sock_count < 1) {
+            send_msg(socket, ADD_FRIEND_NO_USER, "无此用户");
+        } else {
+            int oppsite_socket = atoi(list_entry(sock_head->list.prev, struct select_row, list)->argv[0]);
+
+            char values_buf[256] = {0};
+            sprintf(values_buf, "('%s','%s',1)", afdata.username, afdata.friendname);
+            db_insert("tb_friend(username,friendname,relation)", values_buf);
+            if (oppsite_socket > 0) {
+                send_msg(oppsite_socket, ADD_FRIEND_REQUEST, data);
+            }
+        }
+
+    } else {
+        int is_reverse = u2fcount > 0 ? 0 : 1;
+        char *oppsite_name = is_reverse ? afdata.friendname : afdata.username;
+
+        char where_buf[256] = {0};
+        bzero(where_buf, sizeof(where_buf));
+        sprintf(where_buf, "username=='%s'", oppsite_name);
+        struct select_row *sock_head = db_select("tb_account", "socket", where_buf);
+
+        int sock_count = list_entry(sock_head->list.prev, struct select_row, list)->index;
+        if (sock_count < 1) {
+            send_msg(socket, ADD_FRIEND_NO_USER, "无此用户");
+
+        } else {
+            int oppsite_socket = atoi(list_entry(sock_head->list.prev, struct select_row, list)->argv[0]);
+            struct select_row *row_head = u2fcount > 0 ? u2ffrow_head : f2urow_head;
+            int relation = atoi(list_entry(row_head->list.next, struct select_row, list)->argv[2]);
+            char *relation_set;
+
+            switch (relation) {
+            case 0:
+                if (oppsite_socket > 0) {
+                    send_msg(oppsite_socket, ADD_FRIEND_REQUEST, data);
+                }
+                char values_buf0[256] = {0};
+                uuid_t uuid0;
+                uuid_generate(uuid0);
+                sprintf(
+                    values_buf0,
+                    "'%s','%s','%s',%d,'%s'",
+                    uuid0, afdata.username, afdata.friendname, ADD_FRIEND_REQUEST, data);
+                db_insert("tb_fmsg(uuid,send_name,recv_name,code,data)", values_buf0);
+                relation_set = !is_reverse ? "relation=1" : "relation=3";
+                db_update("tb_friend", relation_set, !is_reverse ? where_buf1 : where_buf2);
+                break;
+            case 1:
+                if (oppsite_socket > 0) {
+                    send_msg(oppsite_socket, ADD_FRIEND_REQUEST, data);
+                }
+                char values_buf1[256] = {0};
+                uuid_t uuid1;
+                uuid_generate(uuid1);
+                sprintf(
+                    values_buf1,
+                    "'%s','%s','%s',%d,'%s'",
+                    uuid1, afdata.username, afdata.friendname, ADD_FRIEND_REQUEST, data);
+                db_insert("tb_fmsg(uuid,send_user,recv_user,code,data)", values_buf1);
+                relation_set = !is_reverse ? "relation=1" : "relation=3";
+                db_update("tb_friend", relation_set, !is_reverse ? where_buf1 : where_buf2);
+                break;
+            case 2:
+                send_msg(socket, ADD_FRIEND_DUP, data);
+                break;
+            case 3:
+                if (oppsite_socket > 0) {
+                    send_msg(oppsite_socket, ADD_FRIEND_REQUEST, data);
+                }
+                char values_buf3[256] = {0};
+                uuid_t uuid3;
+                uuid_generate(uuid3);
+                sprintf(
+                    values_buf3,
+                    "'%s','%s','%s',%d,'%s'",
+                    uuid3, afdata.username, afdata.friendname, ADD_FRIEND_REQUEST, data);
+
+                db_insert("tb_fmsg(uuid,send_name,recv_name,code,data)", values_buf3);
+                relation_set = !is_reverse ? "relation=1" : "relation=3";
+                db_update("tb_friend", relation_set, !is_reverse ? where_buf1 : where_buf2);
+                break;
+            case 4:
+                send_msg(socket, ADD_FRIEND_DUP, data);
+                break;
+            case 5:
+                send_msg(socket, ADD_FRIEND_BLACK, data);
+                break;
+            case 7:
+                send_msg(socket, ADD_FRIEND_BLACK, data);
+                break;
+            default:
+                break;
+            }
         }
     }
 
