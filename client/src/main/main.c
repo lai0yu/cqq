@@ -50,81 +50,27 @@
 #define LISTING_OFFLINE_MSG 81        // 一条一条发
 #define LISTING_OFFLINE_FINISH 82     // 离线消息发送
 
-int serv_sock;
-struct msg cmsg;
-struct sign_data sdata;
+static int serv_sock;
+char *data[512];
+char *on[512];
+int count = 0;
 
-char send_buf[1024] = {0};
-int send_ret = -1;
+static char gusername[64];
+static char gpassword[64];
 
-char recv_buf[1024];
-int recv_ret = -1;
+int sign_in();
+int sign_up();
 
 void login_ui();
 void main_ui();
+void friend_ui(char *, char *, int);
+void message_ui(char *, char *);
 
 void fun_login();
 void fun_main();
+void friend_main();
 
-void fun_sign_in();
-void fun_sign_up();
-void fun_sign_out();
-
-void fun_friend_list();
-void fun_friend_add();
-void fun_friend_del();
-void fun_friend_black();
-
-void sign_in_return(struct msg smsg);
-void sign_out_return(struct msg smsg);
-void sign_up_return(struct msg smsg);
-void sign_del_return(struct msg smsg);
-
-void fun_friend();
-void fun_group();
-
-void *recv_work(void *argv) {
-    recv_ret = recv(serv_sock, recv_buf, sizeof(recv_buf), 0);
-    if (recv_ret == 0) {
-        printf("服务器可能已经宕机,关闭连接\n");
-        close(serv_sock);
-        return recv_buf;
-    } else {
-        cmsg = parse_msg(recv_buf);
-        switch (cmsg.code) {
-        case 0 ... 9: sign_in_return(cmsg); break;
-        case 10 ... 19: break;
-        case 20 ... 29: sign_up_return(cmsg); break;
-        case 30 ... 39: break;
-        case 40 ... 49: break;
-        case 50 ... 59: break;
-        case 60 ... 69: break;
-        case 70 ... 79: break;
-        case 80 ... 89: break;
-        case 90 ... 99: break;
-        case 100 ... 109: break;
-        case 110 ... 119: break;
-        case 120 ... 129: break;
-        case 130 ... 139: break;
-
-        default: break;
-        }
-    }
-    return NULL;
-}
-
-// 向服务器发送消息
-static int send_msg(int socket, char code, char *data) {
-    struct msg smsg;
-    memset(&smsg, 0, sizeof(struct msg));
-    smsg.code = code;
-    strcpy(smsg.data, data);
-
-    bzero(send_buf, sizeof(send_buf));
-    pack_msg(smsg, send_buf);
-    send_ret = send(socket, send_buf, strlen(send_buf) + 1, 0);
-    return send_ret;
-}
+void friend_char(char *);
 
 // ui界面
 void login_ui() {
@@ -134,7 +80,7 @@ void login_ui() {
     printf("*                                     *\n");
     printf("*              2:注册                  *\n");
     printf("*                                     *\n");
-    printf("*              3:退出系统              *\n");
+    printf("*              3:退出系统             *\n");
     printf("*                                     *\n");
     printf("***************************************\n");
 }
@@ -142,179 +88,208 @@ void login_ui() {
 void main_ui() {
     printf("***************功能界面*****************\n");
     printf("*                                     *\n");
-    printf("*              1:好友功能              *\n");
-    printf("*                                     *\n");
-    printf("*              2:群聊列表              *\n");
-    printf("*                                     *\n");
-    printf("*              3:退出登录              *\n");
-    printf("*                                     *\n");
-    printf("***************************************\n");
-}
-
-void friend_ui() {
-    printf("***************好友界面*****************\n");
-    printf("*                                     *\n");
     printf("*              1:好友列表              *\n");
     printf("*                                     *\n");
-    printf("*              2:加好友                *\n");
+    printf("*              2:群列表                *\n");
     printf("*                                     *\n");
+    printf("*              3:添加好友              *\n");
+    printf("*                                     *\n");
+    printf("*              4:删除好友              *\n");
+    printf("*                                     *\n");
+    printf("*              5:拉黑好友              *\n");
+    printf("*                                     *\n");
+    printf("*              6:创建群聊              *\n");
+    printf("*                                     *\n");
+    printf("*              7:删除群聊              *\n");
+    printf("*                                     *\n");
+    printf("*              8:退出登录              *\n");
     printf("*                                     *\n");
     printf("***************************************\n");
 }
 
-void fun_friend() {
-    friend_ui();
-    printf("请输入选项:\n");
-    char c;
-    scanf("%c", &c);
-    switch (c) {
-    case '1': fun_friend_list(); break;
-    case '2': fun_friend_add(); break;
-    default:
-        system("clear");
-        printf("选项不正确！请重新输入\n");
-        fun_login();
-        break;
+void friend_ui(char *data, char *on, int count) {
+    int i;
+    printf("***************好友列表*****************\n");
+    printf("*                                     *\n");
+    for (i = 0; i < count; i++) {
+        printf("            ++i:%s(%s)             \n", data[i], on[i]);
+        printf("*                                     *\n");
     }
+    printf("*           q:返回功能界面           *\n");
+    printf("*                                     *\n");
+    printf("***************************************\n");
 }
 
-void fun_login() {
+void message_ui(char *friendname, char *online) {
+    printf("**************%s的聊天窗口(%s)*****************\n", friendname, online);
+    printf("*                                     *\n");
+    printf("*              1:未未未未              *\n");
+    printf("*                                     *\n");
+    printf("*              2:未未未未              *\n");
+    printf("*                                     *\n");
+    printf("*              3:未未未未              *\n");
+    printf("*                                     *\n");
+    printf("*              4:未未未未              *\n");
+    printf("*                                     *\n");
+    printf("****************************************************\n");
+}
+
+// 向服务器发送消息
+static int send_msg(int socket, char code, char *data) {
+    struct msg smsg;
+    memset(&smsg, 0, sizeof(struct msg));
+    smsg.code = code;
+    strcpy(smsg.data, data);
+
+    char msg_buf[1024] = {0};
+    pack_msg(smsg, msg_buf);
+    return send(socket, msg_buf, strlen(msg_buf) + 1, 0);
+}
+
+// 登录模块
+int sign(char code) {
+    struct sign_data sd;
+    memset(&sd, 0, sizeof(struct sign_data));
+
+    printf("请输入用户名:\n");
+    scanf("%s", sd.username);
+
+    printf("请输入密码:\n");
+    scanf("%s", sd.password);
+
+    char psd[1023];
+    pack_signdata(sd, psd);
+    return send_msg(serv_sock, code, psd);
+}
+// 登录输入
+void fun_login(void) {
     login_ui();
-    printf("请输入选项:\n");
-    char c;
-    scanf("%c", &c);
+    unsigned char c;
+    printf("请输入:\n");
+    scanf("%hhd", &c);
+    if (c < 1 || c > 3) {
+        printf("输入有误,请重新输入\n");
+        scanf("%hhd", &c);
+    }
     switch (c) {
-    case '1': fun_sign_in(); break;
-    case '2': fun_sign_up(); break;
-    case '3': exit(0); break;
-    default:
-        system("clear");
-        printf("选项不正确！请重新输入\n");
-        fun_login();
+    case 1:
+        sign(SIGN_IN);
         break;
+    case 2:
+        sign(SIGN_UP);
+        break;
+    case 3:
+        exit(-1);
     }
 }
 
+// 功能输入
 void fun_main() {
     main_ui();
-    printf("请输入选项:\n");
-    char c;
-    scanf("%c", &c);
+    unsigned char c;
+    printf("请输入:\n");
+    scanf("%hhd", &c);
+    if (c < 1 || c > 8) {
+        printf("输入有误,请重新输入\n");
+        scanf("%hhd", &c);
+    }
     switch (c) {
-    case '1': fun_friend(); break;
-    case '2': fun_group(); break;
-    case '3': fun_sign_out(); break;
-    default:
-        system("clear");
-        printf("选项不正确！请重新输入\n");
+    case 1:
+        send_msg(serv_sock, PULL_FRIENDS_LIST, "拉取好友列表");
+        break;
+    case 2:
+        // send_msg(serv_sock,XXXX,"拉取群聊列表");
+        break;
+    case 3: {
+        struct add_friend_data *afd = (struct add_friend_data *)malloc(sizeof(struct add_friend_data));
+        bzero(afd, sizeof(struct add_friend_data));
+        char buf[100];
+        printf("请输入您的用户名:");
+        scanf("%s", afd->username);
+        printf("请输入您的好友名:");
+        scanf("%s", afd->friendname);
+        bzero(buf, sizeof(buf));
+        pack_afdata(*afd, buf);
+        send_msg(serv_sock, ADD_FRIEND, buf);
+        break;
+    }
+    case 4:
+        // send_msg(serv_sock,DEL_FRIEND,"请求删除好友");
+        break;
+    case 5:
+        // send_msg(serv_sock,BLACK_USER,"请求拉黑好友");
+        break;
+    case 6:
+        // send_msg(serv_sock,XXXX,"请求创建群聊");
+        break;
+    case 7:
+        // send_msg(serv_sock,XXXX,"请求删除群聊");
+        break;
+    case 8:
+        send_msg(serv_sock, SIGN_OUT, "请求退出登录");
+        break;
+    }
+}
+
+// 好友列表功能
+void friend_main() {
+    friend_ui(data, on, count);
+    int c;
+    printf("请输入:\n");
+    scanf("%d", &c);
+    if (c < 1 || c > count) {
+        printf("输入有误,请重新输入\n");
+        scanf("%d", &c);
+    }
+    char *friendname[64];
+    char *online[30];
+    if (c == 113) {
         fun_main();
-        break;
-    }
-}
-
-void fun_sign_in() {
-    printf("用户名：\n");
-    scanf("%s", sdata.username);
-    printf("密码：\n");
-    scanf("%s", sdata.password);
-    char msg[1020];
-    pack_signdata(sdata, msg);
-    send_msg(serv_sock, SIGN_IN, msg);
-    if (send_msg > 0) {
-        recv_work(NULL);
-    }
-}
-
-void sign_in_return(struct msg smsg) {
-    switch (smsg.code) {
-    case SIGN_IN_SUCCESS:
-        system("clear");
-        printf("登录成功，跳转到主页面\n");
-        fun_main();
-        break;
-    case SIGN_IN_NO_USER:
-        system("clear");
-        printf("没有此用户名，请重新输入\n");
-        fun_sign_in();
-        break;
-    case SIGN_IN_PW_ERROR:
-        system("clear");
-        printf("密码错误\n");
-        fun_sign_in();
-        break;
-
-    default:
-        break;
-    }
-}
-
-void fun_sign_up() {
-    printf("用户名：\n");
-    struct sign_data sid;
-    scanf("%s", sid.username);
-    printf("密码：\n");
-    scanf("%s", sid.password);
-
-    char repassword[64];
-    printf("重复密码：\n");
-    scanf("%s", repassword);
-
-    if (strcmp(sid.password, repassword) == 0) {
-        char msg[1020];
-        pack_signdata(sid, msg);
-        send_msg(serv_sock, SIGN_UP, msg);
-        if (send_ret > 0) {
-            recv_work(NULL);
-        }
     } else {
-        system("clear");
-        printf("重复密码错误,请重新输入\n");
-        fun_sign_up();
+        bzero(friendname, sizeof(char *) * 64);
+        bzero(online, sizeof(char *) * 30);
+        strcpy(friendname, data[c]);
+        strcmp(on[c], "在线");
+        strcpy(online, on[c]);
+        message_ui(friendname, online);
     }
 }
 
-void sign_up_return(struct msg smsg) {
-    switch (smsg.code) {
-    case SIGN_UP_DUP_USER:
-        system("clear");
-        printf("用户名已经被占用,请重新输入\n");
-        fun_sign_up();
-        break;
-    case SIGN_UP_SUCCESS:
-        system("clear");
-        printf("注册成功,跳转到登录界面\n");
-        fun_login();
-        break;
+// 子线程只接收聊天业务
+void *recv_work(void *arg) {
+    int fd = *(int *)arg;
+    char buf[512];
+    int recv_ret = -1;
+    struct msg cmsg;
+    while (1) {
+        bzero(buf, sizeof(buf));
+        int recv_ret = recv(fd, buf, sizeof(buf), 0);
+        if (recv_ret == 0) {
+            close(fd);
+            pthread_exit(NULL);
+        }
+        if (recv_ret > 0) {
+            cmsg = parse_msg(buf);
+            switch (cmsg.code) {
+            // 收到添加好友的请求
+            case ADD_FRIEND_REQUEST: {
+                char c;
+                printf("您收到一条好友申请验证\n");
+                printf("请输入是否同意添加好友(y/n)?\n");
+                scanf("%s", &c);
+                if (c == 'y') {
+                    printf("已同意\n");
+                    send_msg(serv_sock, ADD_FRIEND_ADMIT, "已同意添加好友");
+                    fun_main();
+                } else {
+                    printf("已拒绝\n");
+                    send_msg(serv_sock, ADD_FRIEND_REFUSE, "已拒绝添加好友");
+                    fun_main();
+                }
+            }
+            }
+        }
     }
-}
-
-void fun_sign_out() {
-    char msg[1020];
-    pack_signdata(sdata, msg);
-    send_msg(serv_sock, SIGN_OUT, msg);
-    if (send_msg > 0) {
-        recv_work(NULL);
-    }
-    system("clear");
-    printf("已经退出到登录页面");
-    fun_login();
-}
-
-void fun_friend_list() {
-}
-void fun_friend_add() {
-    struct add_friend_data afd;
-    strcpy(afd.username, sdata.username);
-    printf("好友名：\n");
-    scanf("%s", afd.friendname);
-    char msg[512];
-    pack_afdata(afd, msg);
-    send_msg(serv_sock, ADD_FRIEND, msg);
-    if (send_msg > 0) {
-        recv_work(NULL);
-    }
-}
-void fun_friend_del() {
 }
 
 int main(int argc, char *argv[]) {
@@ -341,11 +316,144 @@ int main(int argc, char *argv[]) {
         return -1;
     }
 
-    system("clear");
-    printf("欢迎进入到真爱qq系统\n");
-    fun_login();
+    // 子线程只接收聊天内容
+    pthread_t tid;
+    pthread_create(&tid, NULL, recv_work, (void *)&serv_sock);
+    pthread_detach(tid);
 
+    // 主线程同时接收及发送
+    char buf[512];
+    int ret = -1;
+    struct msg cmsg;
+    // 登录界面及操作
+    fun_login();
+    // 接收服务器返回
+    while (1) {
+        ret = recv(serv_sock, buf, sizeof(buf), 0);
+        if (ret > 0) {
+            cmsg = parse_msg(buf);
+            switch (cmsg.code) {
+            // 注册成功
+            case SIGN_UP_SUCCESS: {
+                printf("%s\n", cmsg.data);
+                fun_login();
+                break;
+            }
+            // 注册用户名已存在
+            case SIGN_UP_DUP_USER: {
+                printf("%s\n", cmsg.data);
+                printf("请重新注册\n");
+                fun_login();
+                break;
+            }
+            // 登录成功
+            case SIGN_IN_SUCCESS: {
+                printf("%s\n", cmsg.data);
+                fun_main();
+                break;
+            }
+            // 登录密码错误
+            case SIGN_IN_PW_ERROR: {
+                printf("%s\n", cmsg.data);
+                printf("请重新登录\n");
+                fun_login();
+                break;
+            }
+            // 登录用户名不存在
+            case SIGN_IN_NO_USER: {
+                printf("%s\n", cmsg.data);
+                printf("请重新登录\n");
+                fun_login();
+                break;
+            }
+            // 退出登录成功
+            case SIGN_OUT_SUCCESS: {
+                printf("%s\n", cmsg.data);
+                fun_login();
+                break;
+            }
+            // 注销用户成功
+            case SIGN_DEL_SUCCESS: {
+                printf("%s\n", cmsg.data);
+                fun_login();
+                break;
+            }
+            // 注销用户不存在
+            case SIGN_DEL_NO_USER: {
+                printf("%s\n", cmsg.data);
+                fun_main();
+                break;
+            }
+            // 注销用户密码错误
+            case SIGN_DEL_PW_ERROR: {
+                printf("%s\n", cmsg.data);
+                fun_main();
+                break;
+            }
+            // 还没有好友
+            case NO_FRIENDS: {
+                printf("%s\n", cmsg.data);
+                break;
+            }
+            // 接收一个个好友加入数组
+            case LISTING_FRIEND: {
+                int i;
+                struct friend_data fdata;
+                bzero(&fdata, sizeof(fdata));
+                fdata = parse_fdata(cmsg.data);
+                for (i = 0; i < 100; i++) {
+                    data[i] = fdata.friendname;
+                    if (fdata.is_online) {
+                        on[i] = "在线";
+                    } else {
+                        on[i] = "离线";
+                    }
+                    count++;
+                }
+                break;
+            }
+            // 拉取好友列表
+            case LISTING_FRIEND_FINISHED: {
+                friend_main();
+                break;
+            }
+            // 收到添加好友的请求
+            case ADD_FRIEND_REQUEST: {
+                char c;
+                printf("您收到一条好友申请验证\n");
+                printf("请输入是否同意添加好友(y/n)?\n");
+                scanf("%s", &c);
+                if (c == 'y') {
+                    printf("已同意\n");
+                    send_msg(serv_sock, ADD_FRIEND_ADMIT, "已同意添加好友");
+                    fun_main();
+                } else {
+                    printf("已拒绝\n");
+                    send_msg(serv_sock, ADD_FRIEND_REFUSE, "已拒绝添加好友");
+                    fun_main();
+                }
+                break;
+            }
+            // 没有找到该用户
+            case ADD_FRIEND_NO_USER: {
+                fun_main();
+                break;
+            }
+            // 已经是好友
+            case ADD_FRIEND_DUP: {
+                fun_main();
+                break;
+            }
+            // 已经被对方拉黑或已拉黑对方
+            case ADD_FRIEND_BLACK: {
+                fun_main();
+                break;
+            }
+            default:
+                break;
+            }
+        }
+    }
     close(serv_sock);
-    serv_sock = -1;
     return 0;
 }
